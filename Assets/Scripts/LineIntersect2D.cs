@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Tools;
 using Unity.Mathematics;
 using UnityEngine;
 
 public class LineIntersect2D
 {
-    class EventComparer : IComparer<Vector2>
+    private class EventComparer : IComparer<Vector2>
     {
         public int Compare(Vector2 x, Vector2 y)
         {
@@ -26,17 +27,10 @@ public class LineIntersect2D
     }
 
     [Serializable]
-    public struct Line
-    {
-        public Vector2 top;
-        public Vector2 bottom;
-    }
-
-    [Serializable]
     public struct IntersectEvent
     {
-        public Vector2 point;
-        public List<Line> lines;
+        public Vector2               point;
+        public List<LineTool2D.Line> lines;
     }
 
     // 结果集合
@@ -44,18 +38,21 @@ public class LineIntersect2D
 
     private static int lastCount = 0;
 
-    private Dictionary<Vector2, HashSet<Line>> _upperPointCache      = new();
-    private Dictionary<Vector2, HashSet<Line>> _centerPointCache     = new();
-    private Dictionary<Vector2, HashSet<Line>> _lowerPointCache      = new();
-    private SortedList<Vector2, Vector2>       _lineSortedEventCache = new(new EventComparer());
-    private List<Line>                         _lineSweepCache       = new();
+    private Dictionary<Vector2, HashSet<LineTool2D.Line>> _upperPointCache      = new();
+    private Dictionary<Vector2, HashSet<LineTool2D.Line>> _centerPointCache     = new();
+    private Dictionary<Vector2, HashSet<LineTool2D.Line>> _lowerPointCache      = new();
+    private SortedList<Vector2, Vector2>                  _lineSortedEventCache = new(new EventComparer());
+    private List<LineTool2D.Line>                         _lineSweepCache       = new();
 
-    public IntersectEvent[] IntersectPoint3(Line[] lineSet)
+    /// <summary>
+    /// 简单粗暴的扫描线算法 计算线段集合交点
+    /// </summary>
+    public IntersectEvent[] IntersectPoint3(LineTool2D.Line[] lineSet)
     {
-        ReOrderLines(ref lineSet);
+        LineTool2D.ReOrderLines(ref lineSet);
         AddPointLineToCache(lineSet);
 
-        while (_lineSortedEventCache.Count >0)
+        while (_lineSortedEventCache.Count > 0)
         {
             var e = PopEvent()!.Value;
             if (_upperPointCache.ContainsKey(e))
@@ -64,15 +61,15 @@ public class LineIntersect2D
                 continue;
             }
 
-            if (_lowerPointCache.TryGetValue(e,out var lines))
+            if (_lowerPointCache.TryGetValue(e, out var lines))
             {
-                foreach (Line line in lines)
+                foreach (LineTool2D.Line line in lines)
                 {
                     _lineSweepCache.Remove(line);
                 }
             }
         }
-        
+
         return Result.Values.ToArray();
     }
 
@@ -81,16 +78,16 @@ public class LineIntersect2D
         if (_upperPointCache.TryGetValue(point, out var lines))
         {
             _lineSweepCache.AddRange(lines);
-            foreach (Line line1 in lines)
+            foreach (LineTool2D.Line line1 in lines)
             {
-                foreach (Line line2 in _lineSweepCache)
+                foreach (LineTool2D.Line line2 in _lineSweepCache)
                 {
                     if (!line1.Equals(line2))
                     {
-                        var intersectPoint = Intersect(line1, line2);
+                        var intersectPoint = LineTool2D.Intersect(line1, line2);
                         if (intersectPoint.HasValue)
                         {
-                            if (Result.TryGetValue(intersectPoint.Value,out var result))
+                            if (Result.TryGetValue(intersectPoint.Value, out var result))
                             {
                                 result.lines.Add(line1);
                                 result.lines.Add(line2);
@@ -100,7 +97,7 @@ public class LineIntersect2D
                                 Result.Add(intersectPoint.Value, new IntersectEvent()
                                 {
                                     point = intersectPoint.Value,
-                                    lines =  new List<Line>() { line1, line2, },
+                                    lines = new List<LineTool2D.Line>() { line1, line2, },
                                 });
                             }
                         }
@@ -109,9 +106,13 @@ public class LineIntersect2D
             }
         }
     }
-    public IntersectEvent[] IntersectPoint2(Line[] lineSet)
+
+    /// <summary>
+    /// 理论上更快 但是有 bug 暂时不用
+    /// </summary>
+    public IntersectEvent[] IntersectPoint2(LineTool2D.Line[] lineSet)
     {
-        ReOrderLines(ref lineSet);
+        LineTool2D.ReOrderLines(ref lineSet);
         AddPointLineToCache(lineSet);
 
         int count = 0;
@@ -137,18 +138,18 @@ public class LineIntersect2D
         return Result.Values.ToArray();
     }
 
-    public void AddPointLineToCache(Line[] lineSet)
+    private void AddPointLineToCache(LineTool2D.Line[] lineSet)
     {
         for (int i = 0; i < lineSet.Length; i++)
         {
-            Line line = lineSet[i];
-            if (_upperPointCache.TryGetValue(line.top, out HashSet<Line> set))
+            LineTool2D.Line line = lineSet[i];
+            if (_upperPointCache.TryGetValue(line.top, out HashSet<LineTool2D.Line> set))
             {
                 set.Add(line);
             }
             else
             {
-                _upperPointCache.Add(line.top, new HashSet<Line>() { line, });
+                _upperPointCache.Add(line.top, new HashSet<LineTool2D.Line>() { line, });
             }
 
             if (_lowerPointCache.TryGetValue(line.bottom, out set))
@@ -157,94 +158,11 @@ public class LineIntersect2D
             }
             else
             {
-                _lowerPointCache.Add(line.bottom, new HashSet<Line>() { line, });
+                _lowerPointCache.Add(line.bottom, new HashSet<LineTool2D.Line>() { line, });
             }
 
             PushEvent(line.top);
             PushEvent(line.bottom);
-        }
-    }
-
-    /// <summary>
-    /// 重新排序线段，使得线段的顶点总是在底点的上方
-    /// </summary>
-    private void ReOrderLines(ref Line[] lines)
-    {
-        // top.y > bottom.y
-        // top.x < bottom.x
-        for (int i = 0; i < lines.Length; i++)
-        {
-            if (lines[i].top.y < lines[i].bottom.y
-             || (lines[i].top.y.Equals(lines[i].bottom.y) && lines[i].top.x > lines[i].bottom.x))
-            {
-                var temp = lines[i].top;
-                lines[i].top = lines[i].bottom;
-                lines[i].bottom = temp;
-            }
-        }
-    }
-
-    /// <summary>
-    /// 2d 线段求交点
-    /// </summary>
-    public Vector2? Intersect(Line l1, Line l2)
-    {
-        Vector2 p1 = l1.top;
-        Vector2 p2 = l1.bottom;
-        Vector2 p3 = l2.top;
-        Vector2 p4 = l2.bottom;
-
-        Vector2 p4p3 = p4 - p3;
-        Vector2 p1p3 = p1 - p3;
-        Vector2 p2p1 = p2 - p1;
-
-        float denominator = p4p3.y * p2p1.x - p4p3.x * p2p1.y;
-        float ua = (p4p3.x * p1p3.y - p4p3.y * p1p3.x) / denominator;
-        float ub = (p2p1.x * p1p3.y - p2p1.y * p1p3.x) / denominator;
-
-        float x = p1.x + ua * p2p1.x;
-        float y = p1.y + ua * p2p1.y;
-
-        if (0f <= ua && ua <= 1f && 0f <= ub && ub <= 1f)
-        {
-            return new Vector2(x, y);
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// 点与线段的距离
-    /// </summary>
-    public float PointLineDistance(Vector2 point, Line line)
-    {
-        if (line.top == line.bottom)
-        {
-            return Vector2.Distance(point, line.top);
-        }
-
-        Vector2 p1 = line.top;
-        Vector2 p2 = line.bottom;
-        Vector2 p3 = point;
-
-        Vector2 p3p1 = p3 - p1;
-        Vector2 p2p1 = p2 - p1;
-
-        float sqrMagnitude = p2p1.x * p2p1.x + p2p1.y * p2p1.y;
-        float u = (p3p1.x * p2p1.x + p3p1.y * p2p1.y) / sqrMagnitude;
-
-        if (u <= 0f)
-        {
-            return -1f;
-        }
-        else if (u >= 1f)
-        {
-            return -1f;
-        }
-        else
-        {
-            Vector2 p = p1 + u * p2p1;
-            return Vector2.Distance(p, p3);
         }
     }
 
@@ -254,41 +172,41 @@ public class LineIntersect2D
     private void HandleEventPoint(Vector2 point)
     {
         // 1. 找到所有以 point 为上顶点的线段
-        Line[] upperSet = Array.Empty<Line>();
-        Line[] centerSet = Array.Empty<Line>();
-        Line[] lowerSet = Array.Empty<Line>();
+        LineTool2D.Line[] upperSet = Array.Empty<LineTool2D.Line>();
+        LineTool2D.Line[] centerSet = Array.Empty<LineTool2D.Line>();
+        LineTool2D.Line[] lowerSet = Array.Empty<LineTool2D.Line>();
 
-        if (_upperPointCache.TryGetValue(point, out HashSet<Line> upperS))
+        if (_upperPointCache.TryGetValue(point, out HashSet<LineTool2D.Line> upperS))
         {
             upperSet = upperS.ToArray();
         }
 
-        if (_centerPointCache.TryGetValue(point, out HashSet<Line> centerS))
+        if (_centerPointCache.TryGetValue(point, out HashSet<LineTool2D.Line> centerS))
         {
             centerSet = centerS.ToArray();
         }
 
-        if (_lowerPointCache.TryGetValue(point, out HashSet<Line> lowerS))
+        if (_lowerPointCache.TryGetValue(point, out HashSet<LineTool2D.Line> lowerS))
         {
             lowerSet = lowerS.ToArray();
         }
 
         // 2. 在状态中找到所有以 point 为下顶点或包含 point 的线段
-        Line[] centerAndLowerSet = lowerSet.Union(centerSet).ToArray();
-        Line[] upperAndCenterSet = upperSet.Union(centerSet).ToArray();
-        SortedArrayByPointY(ref centerAndLowerSet, point );
-        SortedArrayByPointY(ref upperAndCenterSet, point );
+        LineTool2D.Line[] centerAndLowerSet = lowerSet.Union(centerSet).ToArray();
+        LineTool2D.Line[] upperAndCenterSet = upperSet.Union(centerSet).ToArray();
+        LineTool2D.SortedArrayByPointY(ref centerAndLowerSet, point.y);
+        LineTool2D.SortedArrayByPointY(ref upperAndCenterSet, point.y);
         Array.Reverse(upperAndCenterSet);
 
         // 3. upper, center ,lower 其中包含不止一条线段，说明事件点是交点
         {
             if (upperSet.Length + centerSet.Length + lowerSet.Length > 1)
             {
-                Line[] unionSet = upperSet.Union(centerSet).Union(lowerSet).ToArray();
+                LineTool2D.Line[] unionSet = upperSet.Union(centerSet).Union(lowerSet).ToArray();
                 // 4. 报告发现交点 返回线段集合
                 if (Result.TryGetValue(point, out IntersectEvent resultSet))
                 {
-                    resultSet.lines.AddRange( unionSet);
+                    resultSet.lines.AddRange(unionSet);
                 }
                 else
                 {
@@ -309,7 +227,7 @@ public class LineIntersect2D
             {
                 if (lastDeleteIndex == -1)
                 {
-                    Line line = _lineSweepCache[i];
+                    LineTool2D.Line line = _lineSweepCache[i];
                     if (centerAndLowerSet.Contains(line))
                     {
                         lastDeleteIndex = _lineSweepCache.IndexOf(line);
@@ -319,7 +237,7 @@ public class LineIntersect2D
                 }
                 else
                 {
-                    Line line = _lineSweepCache[lastDeleteIndex];
+                    LineTool2D.Line line = _lineSweepCache[lastDeleteIndex];
                     if (centerAndLowerSet.Contains(line))
                     {
                         _lineSweepCache.RemoveAt(lastDeleteIndex);
@@ -337,6 +255,7 @@ public class LineIntersect2D
         {
             _lineSweepCache.Insert(firstIndex + i, upperAndCenterSet[i]);
         }
+
         // 7. 找到新事件
         if (upperAndCenterSet.Length == 0)
         {
@@ -345,8 +264,8 @@ public class LineIntersect2D
             // lastDeleteIndex 是删除线段后的右边线段的索引 找到左右两边的 2 条线段
             if (0 <= nearIndex && nearIndex + 1 < _lineSweepCache.Count)
             {
-                Line lLine = _lineSweepCache[nearIndex];
-                Line rLine = _lineSweepCache[nearIndex + 1];
+                LineTool2D.Line lLine = _lineSweepCache[nearIndex];
+                LineTool2D.Line rLine = _lineSweepCache[nearIndex + 1];
                 FindNewEvent(lLine, rLine, point);
             }
         }
@@ -356,7 +275,7 @@ public class LineIntersect2D
             int nearIndex = FindLastNearIndexByPoint(point);
             if (nearIndex >= 0)
             {
-                foreach (Line line in upperAndCenterSet)
+                foreach (LineTool2D.Line line in upperAndCenterSet)
                 {
                     FindNewEvent(_lineSweepCache[nearIndex], line, point);
                 }
@@ -365,7 +284,7 @@ public class LineIntersect2D
             // 找到距离 sr 最近的右边的线段 firstIndex + upperAndCenterSet.Length
             if (firstIndex + upperAndCenterSet.Length < _lineSweepCache.Count)
             {
-                foreach (Line line in upperAndCenterSet)
+                foreach (LineTool2D.Line line in upperAndCenterSet)
                 {
                     FindNewEvent(line, _lineSweepCache[firstIndex + upperAndCenterSet.Length], point);
                 }
@@ -378,7 +297,7 @@ public class LineIntersect2D
         int index = -1;
         for (int i = 0; i < _lineSweepCache.Count; i++)
         {
-            Line line = _lineSweepCache[i];
+            LineTool2D.Line line = _lineSweepCache[i];
             if (line.top.Equals(point) || line.bottom.Equals(point))
             {
                 continue;
@@ -392,7 +311,7 @@ public class LineIntersect2D
             {
                 break;
             }
-            else if (lineX < point.x - float.Epsilon )
+            else if (lineX < point.x - float.Epsilon)
             {
                 index = i;
             }
@@ -404,9 +323,9 @@ public class LineIntersect2D
     /// <summary>
     /// 找到新交点事件
     /// </summary>
-    private void FindNewEvent(Line l1, Line l2, Vector2 eventPoint)
+    private void FindNewEvent(LineTool2D.Line l1, LineTool2D.Line l2, Vector2 eventPoint)
     {
-        Vector2? intersectPoint = Intersect(l1, l2);
+        Vector2? intersectPoint = LineTool2D.Intersect(l1, l2);
         if (!intersectPoint.HasValue)
         {
             return;
@@ -428,14 +347,14 @@ public class LineIntersect2D
 
         // 添加新事件
         PushEvent(intersectPoint.Value);
-        if (_centerPointCache.TryGetValue(intersectPoint.Value, out HashSet<Line> set))
+        if (_centerPointCache.TryGetValue(intersectPoint.Value, out HashSet<LineTool2D.Line> set))
         {
             set.Add(l1);
             set.Add(l2);
         }
         else
         {
-            _centerPointCache.Add(intersectPoint.Value, new HashSet<Line>() { l1, l2, });
+            _centerPointCache.Add(intersectPoint.Value, new HashSet<LineTool2D.Line>() { l1, l2, });
         }
     }
 
@@ -461,22 +380,6 @@ public class LineIntersect2D
             return;
         }
 
-        _lineSortedEventCache.Add(point, point); 
-    }
-
-    public void SortedArrayByPointY(ref Line[] arr, Vector2 point)
-    {
-        Array.Sort(arr, (l1, l2) =>
-        {
-            Vector2 l1Dir = l1.top - l1.bottom;
-            float l1Slope = l1Dir.y / l1Dir.x;
-            float l1X = l1.bottom.x + (point.y - l1.bottom.y) / l1Slope;
-
-            Vector2 l2Dir = l2.top - l2.bottom;
-            float l2Slope = l2Dir.y / l2Dir.x;
-            float l2X = l2.bottom.x + (point.y - l2.bottom.y) / l2Slope;
-
-            return l1X.CompareTo(l2X);
-        });
+        _lineSortedEventCache.Add(point, point);
     }
 }

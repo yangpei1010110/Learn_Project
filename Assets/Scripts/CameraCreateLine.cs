@@ -1,14 +1,15 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using Tools;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 public class CameraCreateLine : MonoBehaviour
 {
-    public List<LineIntersect2D.Line> Lines        = new();
+    public List<LineTool2D.Line> Lines        = new();
     public bool                       isFirstPoint = true;
-    public LineIntersect2D.Line?      Temp;
+    public LineTool2D.Line?      Temp;
 
     void Update()
     {
@@ -17,13 +18,13 @@ public class CameraCreateLine : MonoBehaviour
         {
             if (isFirstPoint)
             {
-                Temp = new LineIntersect2D.Line { top = main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward * (main.nearClipPlane * 10)) };
+                Temp = new LineTool2D.Line { top = main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward * (main.nearClipPlane * 10)) };
 
                 isFirstPoint = false;
             }
             else
             {
-                Temp = new LineIntersect2D.Line { top = Temp.Value.top, bottom = main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward * (main.nearClipPlane * 10)) };
+                Temp = new LineTool2D.Line { top = Temp.Value.top, bottom = main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward * (main.nearClipPlane * 10)) };
                 Lines.Add(Temp.Value);
                 Temp = null;
                 isFirstPoint = true;
@@ -34,7 +35,7 @@ public class CameraCreateLine : MonoBehaviour
         {
             var point1 = main.ScreenToWorldPoint(new Vector3(Random.Range(0, Screen.width), Random.Range(0, Screen.height), 0) + Vector3.forward * (main.nearClipPlane * 10));
             var point2 = main.ScreenToWorldPoint(new Vector3(Random.Range(0, Screen.width), Random.Range(0, Screen.height), 0) + Vector3.forward * (main.nearClipPlane * 10));
-            var line = new LineIntersect2D.Line { top = point1, bottom = point2, };
+            var line = new LineTool2D.Line { top = point1, bottom = point2, };
             Lines.Add(line);
         }
 
@@ -42,9 +43,9 @@ public class CameraCreateLine : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.D))
         {
             var center = (Vector2)main.ScreenToWorldPoint(new Vector3(Screen.width / 2f, Screen.height / 2f, 0) + Vector3.forward * (main.nearClipPlane * 10));
-            var debugLine1 = new LineIntersect2D.Line() { top = center + new Vector2(0f, 1f), bottom = center + new Vector2(0f, -1f), };
-            var debugLine2 = new LineIntersect2D.Line() { top = center + new Vector2(0.5f, 0.7f), bottom = center + new Vector2(0.5f, -1.3f), };
-            var debugLine3 = new LineIntersect2D.Line() { top = center + new Vector2(-1f, 0.6f), bottom = center + new Vector2(1f, -1.2f), };
+            var debugLine1 = new LineTool2D.Line() { top = center + new Vector2(0f, 1f), bottom = center + new Vector2(0f, -1f), };
+            var debugLine2 = new LineTool2D.Line() { top = center + new Vector2(0.5f, 0.7f), bottom = center + new Vector2(0.5f, -1.3f), };
+            var debugLine3 = new LineTool2D.Line() { top = center + new Vector2(-1f, 0.6f), bottom = center + new Vector2(1f, -1.2f), };
 
             Lines.Add(debugLine1);
             Lines.Add(debugLine2);

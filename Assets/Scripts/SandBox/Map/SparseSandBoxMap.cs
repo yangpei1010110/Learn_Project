@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Extensions;
 using JetBrains.Annotations;
 using SandBox.Elements;
@@ -8,12 +9,6 @@ namespace SandBox.Map
 {
     public class SparseSandBoxMap
     {
-        #region Data
-
-        public Dictionary<Vector2Int, MapBlock> _mapBlocks = new();
-
-        #endregion
-
         public IElement this[Vector2Int globalPosition]
         {
             get
@@ -32,7 +27,26 @@ namespace SandBox.Map
             }
         }
 
+        public bool ContainKey(Vector2Int mapBlockIndex) => _mapBlocks.ContainsKey(mapBlockIndex);
+
         private MapBlock CreateMapBlock(Vector2Int mapBlockIndex) => new(mapBlockIndex);
+
+        public void UpdateParticles()
+        {
+            Instance.Step += 1;
+            foreach (MapBlock mapBlock in _mapBlocks.Values.ToArray())
+            {
+                mapBlock.UpdateElement();
+            }
+        }
+
+        #region Data
+
+        public long Step { get; set; }
+
+        public Dictionary<Vector2Int, MapBlock> _mapBlocks = new();
+
+        #endregion
 
         #region Instance
 

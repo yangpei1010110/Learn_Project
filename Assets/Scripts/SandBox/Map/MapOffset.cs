@@ -7,10 +7,13 @@ namespace SandBox.Map
     /// </summary>
     public static class MapOffset
     {
+        /// <summary>
+        ///     Unity 世界坐标获取地图本地坐标
+        /// </summary>
         public static Vector2Int WorldToLocal(Vector2 worldPosition, int mapLocalSizePerUnit, float mapWorldSizePerUnit)
         {
-            var globalPosition = WorldToGlobal(worldPosition, mapLocalSizePerUnit, mapWorldSizePerUnit);
-            var localPosition = GlobalToLocal(globalPosition, mapLocalSizePerUnit);
+            Vector2Int globalPosition = WorldToGlobal(worldPosition, mapLocalSizePerUnit, mapWorldSizePerUnit);
+            Vector2Int localPosition = GlobalToLocal(globalPosition, mapLocalSizePerUnit);
             return localPosition;
         }
 

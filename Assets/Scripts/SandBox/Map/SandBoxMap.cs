@@ -19,46 +19,27 @@ namespace SandBox.Map
         }
         public IElement this[Vector2Int globalPosition]
         {
-            get => _sparseSandBoxMap[globalPosition];
+            get => SparseSandBoxMap.Instance[globalPosition];
             set
             {
                 value.Position = MapOffset.GlobalToLocal(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
-                _sparseSandBoxMap[globalPosition] = value;
-                _sparseSpriteMap[globalPosition] = value.Color;
+                SparseSandBoxMap.Instance[globalPosition] = value;
+                SparseSpriteMap.Instance[globalPosition] = SparseSandBoxMap.Instance[globalPosition].Color;
             }
         }
 
-        public bool Exist(Vector2Int globalPosition) => _sparseSandBoxMap._mapBlocks.ContainsKey(MapOffset.BlockIndex(globalPosition, MapSetting.Instance.MapLocalSizePerUnit));
+        public bool Exist(Vector2Int globalPosition) => SparseSandBoxMap.Instance.ContainKey(MapOffset.BlockIndex(globalPosition, MapSetting.Instance.MapLocalSizePerUnit));
 
-        public void Swap(Vector2Int globalPosition1, Vector2Int globalPosition2)
+        public void UpdateMap()
         {
-            IElement temp1 = this[globalPosition1];
-            IElement temp2 = this[globalPosition2];
-
-            Vector2Int positionTemp = temp1.Position;
-            temp1.Position = temp2.Position;
-            temp2.Position = positionTemp;
-
-            this[globalPosition1] = temp2;
-            this[globalPosition2] = temp1;
-        }
-
-        public void UpdateSprite()
-        {
-            _sparseSpriteMap.Flush();
+            SparseSandBoxMap.Instance.UpdateParticles();
+            SparseSpriteMap.Instance.Flush();
         }
 
         #region Instance
 
         [CanBeNull] private static SandBoxMap _instance;
         public static              SandBoxMap Instance => _instance ??= new SandBoxMap();
-
-        #endregion
-
-        #region Data
-
-        private SparseSandBoxMap _sparseSandBoxMap = new();
-        private SparseSpriteMap  _sparseSpriteMap  = new();
 
         #endregion
     }

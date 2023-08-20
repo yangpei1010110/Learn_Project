@@ -1,53 +1,73 @@
 using SandBox.Map;
+using Tools;
 using UnityEngine;
 
 namespace SandBox.Elements.Solid
 {
     public struct Sand : IElement
     {
+        public long        Step     { get; set; }
         public Vector2Int  Position { get; set; }
         public Color       Color    => Color.yellow;
-        public float       Density  { get; set; }
+        public float       Density  => 10f;
         public ElementType Type     => ElementType.Solid;
 
-        // public Sand()
-        // {
-        //     Color = Color.yellow;
-        //     Density = 1;
-        //     Type = ElementType.Solid;
-        // }
-
-        public void UpdateElement(SandBoxMap map, Vector2Int globalPosition)
+        /// <summary>
+        ///     can continue then return true
+        /// </summary>
+        public void UpdateElement(ref IElement element, Vector2Int globalPosition)
         {
+            if (element.Step == SparseSandBoxMap.Instance.Step)
+            {
+                return;
+            }
+            else
+            {
+                element.Step = SparseSandBoxMap.Instance.Step;
+            }
+
             Vector2Int downPosition = globalPosition + Vector2Int.down;
-            if (!map.Exist(downPosition))
+            if (!SandBoxMap.Instance.Exist(downPosition))
             {
                 return;
             }
 
-            if (map[downPosition].Type == ElementType.Void)
+            if (SandBoxMap.Instance[downPosition].Density < element.Density)
             {
-                IElement temp = map[downPosition];
-                map[downPosition] = map[globalPosition];
-                map[globalPosition] = temp;
+                IElement swapElement = SandBoxMap.Instance[downPosition];
+                SandBoxTool.SwapPosition(ref swapElement, ref element);
+                SandBoxMap.Instance[globalPosition] = swapElement;
+                SandBoxMap.Instance[downPosition] = element;
                 return;
             }
 
             Vector2Int downLeftPosition = globalPosition + Vector2Int.down + Vector2Int.left;
-            if (map[downLeftPosition].Type == ElementType.Void)
+            if (!SandBoxMap.Instance.Exist(downLeftPosition))
             {
-                IElement temp = map[downLeftPosition];
-                map[downLeftPosition] = map[globalPosition];
-                map[globalPosition] = temp;
+                return;
+            }
+
+            if (SandBoxMap.Instance[downLeftPosition].Density < element.Density)
+            {
+                IElement swapElement = SandBoxMap.Instance[downLeftPosition];
+                SandBoxTool.SwapPosition(ref swapElement, ref element);
+                SandBoxMap.Instance[globalPosition] = swapElement;
+                SandBoxMap.Instance[downLeftPosition] = element;
                 return;
             }
 
             Vector2Int downRightPosition = globalPosition + Vector2Int.down + Vector2Int.right;
-            if (map[downRightPosition].Type == ElementType.Void)
+            if (!SandBoxMap.Instance.Exist(downRightPosition))
             {
-                IElement temp = map[downRightPosition];
-                map[downRightPosition] = map[globalPosition];
-                map[globalPosition] = temp;
+                return;
+            }
+
+            if (SandBoxMap.Instance[downRightPosition].Density < element.Density)
+            {
+                IElement swapElement = SandBoxMap.Instance[downRightPosition];
+                SandBoxTool.SwapPosition(ref swapElement, ref element);
+                SandBoxMap.Instance[globalPosition] = swapElement;
+                SandBoxMap.Instance[downRightPosition] = element;
                 return;
             }
         }

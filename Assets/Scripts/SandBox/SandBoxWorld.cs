@@ -1,3 +1,4 @@
+using SandBox.Elements.Liquid;
 using SandBox.Elements.Solid;
 using SandBox.Map;
 using UnityEngine;
@@ -26,17 +27,17 @@ namespace SandBox
             {
                 Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 SandBoxMap[mousePosition] = new Sand();
-                Debug.Log($"mousePosition: {mousePosition.x}, {mousePosition.y}");
-                var globalPosition = MapOffset.WorldToGlobal(mousePosition, MapSetting.Instance.MapLocalSizePerUnit, MapSetting.Instance.MapWorldSizePerUnit);
-                Debug.Log($"globalPosition: {globalPosition.x}, {globalPosition.y}");
-                var localPosition = MapOffset.WorldToLocal(mousePosition, MapSetting.Instance.MapLocalSizePerUnit, MapSetting.Instance.MapWorldSizePerUnit);
-                Debug.Log($"localPosition: {localPosition.x}, {localPosition.y}");
+            }
+            else if (Input.GetMouseButton(1))
+            {
+                Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                SandBoxMap[mousePosition] = new Water();
             }
         }
 
         private void UpdateTexture()
         {
-            SandBoxMap.UpdateSprite();
+            SandBoxMap.UpdateMap();
         }
     }
 }

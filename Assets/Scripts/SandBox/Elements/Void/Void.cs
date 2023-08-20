@@ -5,13 +5,22 @@ namespace SandBox.Elements.Void
 {
     public struct Void : IElement
     {
+        public long        Step     { get; set; }
         public Vector2Int  Position { get; set; }
         public Color       Color    => Color.black;
-        public float       Density  { get; set; }
+        public float       Density  => -1f;
         public ElementType Type     => ElementType.Void;
 
-        public void UpdateElement(SandBoxMap map, Vector2Int globalPosition)
+        public void UpdateElement(ref IElement element, Vector2Int globalPosition)
         {
+            if (Step == SparseSandBoxMap.Instance.Step)
+            {
+                return;
+            }
+            else
+            {
+                Step = SparseSandBoxMap.Instance.Step;
+            }
         }
     }
 }

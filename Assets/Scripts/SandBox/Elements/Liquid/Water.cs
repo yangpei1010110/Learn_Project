@@ -1,0 +1,89 @@
+using SandBox.Map;
+using Tools;
+using UnityEngine;
+
+namespace SandBox.Elements.Liquid
+{
+    public class Water : IElement
+    {
+        public long        Step     { get; set; }
+        public Vector2Int  Position { get; set; }
+        public Color       Color    => Color.cyan;
+        public float       Density  => 1f;
+        public ElementType Type     => ElementType.Solid;
+
+        public void UpdateElement(ref IElement element, Vector2Int globalPosition)
+        {
+            if (element.Step == SparseSandBoxMap.Instance.Step)
+            {
+                return;
+            }
+            else
+            {
+                element.Step = SparseSandBoxMap.Instance.Step;
+            }
+
+            Vector2Int? canMoveGlobalPosition = GetCanMoveGlobalPosition(element, globalPosition);
+            if (canMoveGlobalPosition == null)
+            {
+                return;
+            }
+            else
+            {
+                IElement swapElement = SandBoxMap.Instance[canMoveGlobalPosition.Value];
+                SandBoxTool.SwapPosition(ref swapElement, ref element);
+                SandBoxMap.Instance[globalPosition] = swapElement;
+                SandBoxMap.Instance[canMoveGlobalPosition.Value] = element;
+                return;
+            }
+        }
+
+        private static Vector2Int? GetCanMoveGlobalPosition(IElement element, Vector2Int globalPosition)
+        {
+            // can down
+            Vector2Int downGlobalPosition = globalPosition + Vector2Int.down;
+            if (!SandBoxMap.Instance.Exist(downGlobalPosition))
+            {
+                return null;
+            }
+
+            if (SandBoxMap.Instance[downGlobalPosition].Density < element.Density)
+            {
+                return downGlobalPosition;
+            }
+
+            // can down range 5 gird
+            bool isLeft = true;
+            for (int i = 0; i < 5; i++)
+            {
+                Vector2Int newDownGlobalPosition = isLeft ? downGlobalPosition + Vector2Int.left * i : downGlobalPosition + Vector2Int.right * i;
+                isLeft = !isLeft;
+
+                if (!SandBoxMap.Instance.Exist(newDownGlobalPosition))
+                {
+                    continue;
+                }
+
+                if (SandBoxMap.Instance[newDownGlobalPosition].Density < element.Density)
+                {
+                    return newDownGlobalPosition;
+                }
+            }
+
+            // random left or right move
+            int random = Random.Range(-3, 2);
+            Vector2Int randomMoveGlobalPosition = globalPosition + Vector2Int.right * random;
+            if (!SandBoxMap.Instance.Exist(randomMoveGlobalPosition))
+            {
+                return null;
+            }
+
+            if (SandBoxMap.Instance[randomMoveGlobalPosition].Density < element.Density)
+            {
+                return randomMoveGlobalPosition;
+            }
+
+            return null;
+        }
+    }
+}

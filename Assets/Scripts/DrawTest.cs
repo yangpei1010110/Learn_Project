@@ -5,15 +5,15 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class DrawTest : MonoBehaviour
 {
-    private SpriteRenderer _spriteRenderer;
-    private Texture2D      _texture2D;
+    private HashSet<Vector2Int> _changedPixels = new();
 
     private int[,]              _particleMap;
-    private HashSet<Vector2Int> _changedPixels = new();
-    private HashSet<Vector2Int> _sandPixels    = new();
+    private HashSet<Vector2Int> _sandPixels = new();
+    private SpriteRenderer      _spriteRenderer;
+    private Texture2D           _texture2D;
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _texture2D = _spriteRenderer.sprite.texture;
@@ -37,7 +37,7 @@ public class DrawTest : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         UpdateInit();
         UpdateInput();
@@ -54,7 +54,7 @@ public class DrawTest : MonoBehaviour
     {
         if (Input.GetMouseButton(0))
         {
-            var thisPosition = transform.position;
+            Vector3 thisPosition = transform.position;
 
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mousePosition -= (Vector2)thisPosition;
@@ -80,7 +80,7 @@ public class DrawTest : MonoBehaviour
     private void UpdateSand(Vector2Int sandPos)
     {
         // if down is empty then move down
-        var downPos = sandPos + Vector2Int.down;
+        Vector2Int downPos = sandPos + Vector2Int.down;
         if (!_sandPixels.Contains(downPos) && InMapRange(downPos))
         {
             _sandPixels.Remove(sandPos);
@@ -93,7 +93,7 @@ public class DrawTest : MonoBehaviour
         }
 
         // else if down left is empty then move down left
-        var downLeftPos = sandPos + Vector2Int.down + Vector2Int.left;
+        Vector2Int downLeftPos = sandPos + Vector2Int.down + Vector2Int.left;
         if (!_sandPixels.Contains(downLeftPos) && InMapRange(downLeftPos))
         {
             _sandPixels.Remove(sandPos);
@@ -106,7 +106,7 @@ public class DrawTest : MonoBehaviour
         }
 
         // else if down right is empty then move down right
-        var downRightPos = sandPos + Vector2Int.down + Vector2Int.right;
+        Vector2Int downRightPos = sandPos + Vector2Int.down + Vector2Int.right;
         if (!_sandPixels.Contains(downRightPos) && InMapRange(downRightPos))
         {
             _sandPixels.Remove(sandPos);
@@ -123,16 +123,14 @@ public class DrawTest : MonoBehaviour
     {
         foreach (Vector2Int changedPixel in _changedPixels)
         {
-            var particleColor = _particleMap[changedPixel.x, changedPixel.y] == 1 ? Color.yellow : Color.black;
+            Color particleColor = _particleMap[changedPixel.x, changedPixel.y] == 1 ? Color.yellow : Color.black;
             _texture2D.SetPixel(changedPixel.x, changedPixel.y, particleColor);
         }
 
         _texture2D.Apply();
     }
 
-    private bool InMapRange(Vector2Int pos)
-    {
-        return pos.x >= 0 && pos.x < _particleMap.GetLength(0) &&
-               pos.y >= 0 && pos.y < _particleMap.GetLength(1);
-    }
+    private bool InMapRange(Vector2Int pos) =>
+        pos.x >= 0 && pos.x < _particleMap.GetLength(0) &&
+        pos.y >= 0 && pos.y < _particleMap.GetLength(1);
 }

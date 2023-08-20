@@ -5,15 +5,8 @@ namespace Tools
 {
     public static class LineTool2D
     {
-        [Serializable]
-        public struct Line
-        {
-            public Vector2 top;
-            public Vector2 bottom;
-        }
-
         /// <summary>
-        /// 2d 线段求交点
+        ///     2d 线段求交点
         /// </summary>
         public static Vector2? Intersect(Line l1, Line l2)
         {
@@ -42,7 +35,7 @@ namespace Tools
         }
 
         /// <summary>
-        /// 点与线段的距离
+        ///     点与线段的距离
         /// </summary>
         public static float PointLineDistance(Vector2 point, Line line)
         {
@@ -77,7 +70,7 @@ namespace Tools
         }
 
         /// <summary>
-        /// 重排线段 使得线段在 y 轴上的投影是从左到右的
+        ///     重排线段 使得线段在 y 轴上的投影是从左到右的
         /// </summary>
         /// <param name="arr"></param>
         /// <param name="yValue"></param>
@@ -98,21 +91,21 @@ namespace Tools
         }
 
         /// <summary>
-        /// 重新排序线段，使得线段的顶点总是在底点的上方
+        ///     重新排序线段，使得线段的顶点总是在底点的上方
         /// </summary>
         private static void ReOrderLine(ref Line line)
         {
             if (line.top.y < line.bottom.y
              || (line.top.y.Equals(line.bottom.y) && line.top.x > line.bottom.x))
             {
-                var temp = line.top;
+                Vector2 temp = line.top;
                 line.top = line.bottom;
                 line.bottom = temp;
             }
         }
 
         /// <summary>
-        /// 重新排序线段，使得线段的顶点总是在底点的上方
+        ///     重新排序线段，使得线段的顶点总是在底点的上方
         /// </summary>
         public static void ReOrderLines(ref Line[] lines)
         {
@@ -122,6 +115,13 @@ namespace Tools
             {
                 ReOrderLine(ref lines[i]);
             }
+        }
+
+        [Serializable]
+        public struct Line
+        {
+            public Vector2 top;
+            public Vector2 bottom;
         }
     }
 }

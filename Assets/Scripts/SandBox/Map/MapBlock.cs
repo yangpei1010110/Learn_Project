@@ -1,79 +1,50 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using SandBox.Elements;
+using SandBox.Elements.Void;
 using UnityEngine;
-using Void = SandBox.Elements.Void.Void;
 
 namespace SandBox.Map
 {
     public class MapBlock
     {
-        public bool       IsInit;
-        public bool       IsSleep;
-        public Vector2Int MapIndex;
-        public int        MapSize;
+        public MapBlock(Vector2Int mapIndex) => MapIndex = mapIndex;
 
-        public              Texture2D         RuntimeTexture;
-        [CanBeNull] private IElement[]        _mapElements;
-        public              Stack<Vector2Int> _changedElements = new();
-
-        public MapBlock(Vector2Int mapIndex, int mapSize, Texture2D runtimeTexture)
+        public IElement this[Vector2Int localPosition]
         {
-            MapIndex = mapIndex;
-            MapSize = mapSize;
-
-            IsInit = true;
-            IsSleep = true;
-
-            RuntimeTexture = runtimeTexture;
-        }
-
-        public IElement this[int x, int y]
-        {
-            get
-            {
-                InitIfNot();
-                return _mapElements[x + y * MapSize];
-            }
+            get => MapElements[localPosition.x + localPosition.y * MapSetting.Instance.MapLocalSizePerUnit];
             set
             {
-                InitIfNot();
-                if (_mapElements[x + y * MapSize].Type == ElementType.Void)
+                MapElements[localPosition.x + localPosition.y * MapSetting.Instance.MapLocalSizePerUnit] = value;
+                _changedElements.Push(localPosition);
+            }
+        }
+
+        private IElement[] Create()
+        {
+            var elements = new IElement[MapSetting.Instance.MapLocalSizePerUnit * MapSetting.Instance.MapLocalSizePerUnit];
+            for (int i = 0; i < MapSetting.Instance.MapLocalSizePerUnit; i++)
+            {
+                for (int j = 0; j < MapSetting.Instance.MapLocalSizePerUnit; j++)
                 {
-                    _mapElements[x + y * MapSize] = value;
-                    _changedElements.Push(new Vector2Int(x, y));
+                    elements[i + j * MapSetting.Instance.MapLocalSizePerUnit] = new Void()
+                    {
+                        Position = new Vector2Int(i, j),
+                    };
                 }
             }
+
+            return elements;
         }
 
-        private void InitIfNot()
-        {
-            if (!IsSleep) return;
+        #region Data
 
-            _mapElements = new IElement[MapSize * MapSize];
+        [CanBeNull] private IElement[] _mapElements;
+        public              IElement[] MapElements => _mapElements ??= Create();
+        public              Vector2Int MapIndex;
 
-            for (int j = 0; j < MapSize; j++)
-            for (int i = 0; i < MapSize; i++)
-            {
-                _mapElements[i + j * MapSize] = new Void(new Vector2Int(i, j));
-            }
+        public Stack<Vector2Int> _changedElements = new();
 
-            IsInit = true;
-        }
-
-        public void UpdateTexture()
-        {
-            bool isUpdate = false;
-            while (_changedElements.TryPop(out var result))
-            {
-                isUpdate = true;
-                RuntimeTexture.SetPixel(result.x,result.y, _mapElements[result.x + result.y * MapSize].Color);
-            }
-
-            if (isUpdate)
-            {
-                RuntimeTexture.Apply();
-            }
-        }
+        #endregion
     }
 }

@@ -10,6 +10,6 @@ namespace SandBox.Elements
         public float       Density  { get; set; }
         public ElementType Type     { get; }
 
-        public void UpdateElement(SandBoxMap map, Vector2Int particlePosition);
+        public void UpdateElement(SandBoxMap map, Vector2Int globalPosition);
     }
 }

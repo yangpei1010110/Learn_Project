@@ -24,11 +24,7 @@ namespace SandBox.Elements.Liquid
             }
 
             Vector2Int? canMoveGlobalPosition = GetCanMoveGlobalPosition(element, globalPosition);
-            if (canMoveGlobalPosition == null)
-            {
-                return;
-            }
-            else
+            if (canMoveGlobalPosition != null)
             {
                 IElement swapElement = SandBoxMap.Instance[canMoveGlobalPosition.Value];
                 SandBoxTool.SwapPosition(ref swapElement, ref element);
@@ -47,13 +43,14 @@ namespace SandBox.Elements.Liquid
                 return null;
             }
 
+            SandBoxMap.Instance[downGlobalPosition] = SandBoxMap.Instance[downGlobalPosition];
             if (SandBoxMap.Instance[downGlobalPosition].Density < element.Density)
             {
                 return downGlobalPosition;
             }
 
             // can down range 5 gird
-            bool isLeft = true;
+            bool isLeft = Random.Range(0, 2) == 0;
             for (int i = 0; i < 5; i++)
             {
                 Vector2Int newDownGlobalPosition = isLeft ? downGlobalPosition + Vector2Int.left * i : downGlobalPosition + Vector2Int.right * i;
@@ -64,6 +61,7 @@ namespace SandBox.Elements.Liquid
                     continue;
                 }
 
+                SandBoxMap.Instance[newDownGlobalPosition] = SandBoxMap.Instance[newDownGlobalPosition];
                 if (SandBoxMap.Instance[newDownGlobalPosition].Density < element.Density)
                 {
                     return newDownGlobalPosition;
@@ -71,13 +69,14 @@ namespace SandBox.Elements.Liquid
             }
 
             // random left or right move
-            int random = Random.Range(-3, 2);
+            int random = Random.Range(-2, 3);
             Vector2Int randomMoveGlobalPosition = globalPosition + Vector2Int.right * random;
             if (!SandBoxMap.Instance.Exist(randomMoveGlobalPosition))
             {
                 return null;
             }
 
+            SandBoxMap.Instance[randomMoveGlobalPosition] = SandBoxMap.Instance[randomMoveGlobalPosition];
             if (SandBoxMap.Instance[randomMoveGlobalPosition].Density < element.Density)
             {
                 return randomMoveGlobalPosition;

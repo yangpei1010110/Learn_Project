@@ -32,6 +32,7 @@ namespace SandBox.Elements.Solid
                 return;
             }
 
+            SandBoxMap.Instance[downPosition] = SandBoxMap.Instance[downPosition];
             if (SandBoxMap.Instance[downPosition].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[downPosition];
@@ -47,6 +48,7 @@ namespace SandBox.Elements.Solid
                 return;
             }
 
+            SandBoxMap.Instance[downLeftPosition] = SandBoxMap.Instance[downLeftPosition];
             if (SandBoxMap.Instance[downLeftPosition].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[downLeftPosition];
@@ -62,6 +64,7 @@ namespace SandBox.Elements.Solid
                 return;
             }
 
+            SandBoxMap.Instance[downRightPosition] = SandBoxMap.Instance[downRightPosition];
             if (SandBoxMap.Instance[downRightPosition].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[downRightPosition];

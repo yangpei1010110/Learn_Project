@@ -6,13 +6,13 @@ namespace SandBox.Elements.Liquid
 {
     public class Water : IElement
     {
-        public long        Step     { get; set; }
-        public Vector2Int  Position { get; set; }
-        public Color       Color    => Color.cyan;
-        public float       Density  => 1f;
-        public ElementType Type     => ElementType.Solid;
-        public Vector2 Velocity       { get; set; }
-        public Vector2 PositionOffset { get; set; }
+        public long        Step           { get; set; }
+        public Vector2Int  Position       { get; set; }
+        public Color       Color          => Color.cyan;
+        public float       Density        => 1f;
+        public ElementType Type           => ElementType.Solid;
+        public Vector2     Velocity       { get; set; }
+        public Vector2     PositionOffset { get; set; }
 
         public void UpdateElement(ref IElement element, Vector2Int globalPosition)
         {

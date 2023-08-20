@@ -24,10 +24,10 @@ namespace SandBox.Map
 
         public void UpdateElement()
         {
-            var xMin = _dirtyRectMinX;
-            var xMax = _dirtyRectMaxX;
-            var yMin = _dirtyRectMinY;
-            var yMax = _dirtyRectMaxY;
+            int xMin = _dirtyRectMinX;
+            int xMax = _dirtyRectMaxX;
+            int yMin = _dirtyRectMinY;
+            int yMax = _dirtyRectMaxY;
             ClearDirtyRect();
             for (int j = yMin; j <= yMax; j++)
             for (int i = xMin; i <= xMax; i++)
@@ -52,11 +52,11 @@ namespace SandBox.Map
             }
 
             {
-                var originBlockIndex = MapIndex + Vector2Int.left + Vector2Int.down;
+                Vector2Int originBlockIndex = MapIndex + Vector2Int.left + Vector2Int.down;
                 for (int j = 0; j < 3; j++)
                 for (int i = 0; i < 3; i++)
                 {
-                    var testBlockIndex = originBlockIndex + new Vector2Int(i, j);
+                    Vector2Int testBlockIndex = originBlockIndex + new Vector2Int(i, j);
                     if (SparseSandBoxMap.Instance.ContainKey(testBlockIndex))
                     {
                         SparseSandBoxMap.Instance._mapBlocks[testBlockIndex].SetFullDirtyRect();
@@ -65,6 +65,22 @@ namespace SandBox.Map
             }
 
             return elements;
+        }
+
+        public void ClearDirtyRect()
+        {
+            _dirtyRectMinX = int.MaxValue;
+            _dirtyRectMinY = int.MaxValue;
+            _dirtyRectMaxX = int.MinValue;
+            _dirtyRectMaxY = int.MinValue;
+        }
+
+        public void SetFullDirtyRect()
+        {
+            _dirtyRectMinX = 0;
+            _dirtyRectMinY = 0;
+            _dirtyRectMaxX = MapSetting.Instance.MapLocalSizePerUnit - 1;
+            _dirtyRectMaxY = MapSetting.Instance.MapLocalSizePerUnit - 1;
         }
 
         #region Data
@@ -83,21 +99,5 @@ namespace SandBox.Map
         public int _dirtyRectMaxY = int.MinValue;
 
         #endregion
-
-        public void ClearDirtyRect()
-        {
-            _dirtyRectMinX = int.MaxValue;
-            _dirtyRectMinY = int.MaxValue;
-            _dirtyRectMaxX = int.MinValue;
-            _dirtyRectMaxY = int.MinValue;
-        }
-
-        public void SetFullDirtyRect()
-        {
-            _dirtyRectMinX = 0;
-            _dirtyRectMinY = 0;
-            _dirtyRectMaxX = MapSetting.Instance.MapLocalSizePerUnit - 1;
-            _dirtyRectMaxY = MapSetting.Instance.MapLocalSizePerUnit - 1;
-        }
     }
 }

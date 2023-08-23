@@ -1,9 +1,12 @@
+#nullable enable
+
 using UnityEngine;
 
-namespace SandBox.Elements
+namespace SandBox.Elements.Interface
 {
     public interface IElement
     {
+        public float       Life           { get; set; }
         public long        Step           { get; set; }
         public Vector2Int  Position       { get; set; }
         public Color       Color          { get; }

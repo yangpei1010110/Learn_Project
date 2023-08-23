@@ -1,4 +1,5 @@
-namespace SandBox.Elements
+#nullable enable
+namespace SandBox.Elements.Interface
 {
     public enum ElementType
     {

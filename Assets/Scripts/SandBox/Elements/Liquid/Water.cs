@@ -1,3 +1,6 @@
+#nullable enable
+
+using SandBox.Elements.Interface;
 using SandBox.Map;
 using Tools;
 using UnityEngine;
@@ -6,11 +9,12 @@ namespace SandBox.Elements.Liquid
 {
     public class Water : IElement
     {
+        public float       Life           { get; set; }
         public long        Step           { get; set; }
         public Vector2Int  Position       { get; set; }
         public Color       Color          => Color.cyan;
         public float       Density        => 1f;
-        public ElementType Type           => ElementType.Solid;
+        public ElementType Type           => ElementType.Liquid;
         public Vector2     Velocity       { get; set; }
         public Vector2     PositionOffset { get; set; }
 
@@ -29,7 +33,7 @@ namespace SandBox.Elements.Liquid
             if (canMoveGlobalPosition != null)
             {
                 IElement swapElement = SandBoxMap.Instance[canMoveGlobalPosition.Value];
-                SandBoxTool.SwapPosition(ref swapElement, ref element);
+                SandBoxTool.SwapPosition(ref swapElement, ref element, canMoveGlobalPosition.Value, globalPosition);
                 SandBoxMap.Instance[globalPosition] = swapElement;
                 SandBoxMap.Instance[canMoveGlobalPosition.Value] = element;
                 return;

@@ -1,8 +1,10 @@
+#nullable enable
+
 using System.Collections.Generic;
 using System.Linq;
 using Extensions;
 using JetBrains.Annotations;
-using SandBox.Elements;
+using SandBox.Elements.Interface;
 using UnityEngine;
 
 namespace SandBox.Map
@@ -25,6 +27,19 @@ namespace SandBox.Map
                 Vector2Int mapLocalIndex = MapOffset.GlobalToLocal(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
                 map[mapLocalIndex] = value;
             }
+        }
+
+        public void SetDirtyPoint(in Vector2Int globalIndex)
+        {
+            int mapLocalSizePerUnit = MapSetting.Instance.MapLocalSizePerUnit;
+            int mapDirtyOutRange = MapSetting.Instance.MapDirtyOutRange;
+
+            Vector2Int dirtyMin = new(
+                Mathf.Clamp(globalIndex.x - mapDirtyOutRange, 0, mapLocalSizePerUnit - 1),
+                Mathf.Clamp(globalIndex.y - mapDirtyOutRange, 0, mapLocalSizePerUnit - 1));
+            Vector2Int dirtyMax = new(
+                Mathf.Clamp(globalIndex.x + mapDirtyOutRange, 0, mapLocalSizePerUnit - 1),
+                Mathf.Clamp(globalIndex.y + mapDirtyOutRange, 0, mapLocalSizePerUnit - 1));
         }
 
         public bool ContainKey(Vector2Int mapBlockIndex) => _mapBlocks.ContainsKey(mapBlockIndex);

@@ -1,3 +1,6 @@
+#nullable enable
+
+using SandBox.Elements.Interface;
 using SandBox.Map;
 using Tools;
 using UnityEngine;
@@ -6,6 +9,7 @@ namespace SandBox.Elements.Solid
 {
     public struct Sand : IElement
     {
+        public float       Life           { get; set; }
         public long        Step           { get; set; }
         public Vector2Int  Position       { get; set; }
         public Color       Color          => Color.yellow;
@@ -38,7 +42,7 @@ namespace SandBox.Elements.Solid
             if (SandBoxMap.Instance[downPosition].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[downPosition];
-                SandBoxTool.SwapPosition(ref swapElement, ref element);
+                SandBoxTool.SwapPosition(ref swapElement, ref element, downPosition, globalPosition);
                 SandBoxMap.Instance[globalPosition] = swapElement;
                 SandBoxMap.Instance[downPosition] = element;
                 return;
@@ -54,7 +58,7 @@ namespace SandBox.Elements.Solid
             if (SandBoxMap.Instance[downLeftPosition].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[downLeftPosition];
-                SandBoxTool.SwapPosition(ref swapElement, ref element);
+                SandBoxTool.SwapPosition(ref swapElement, ref element, downLeftPosition, globalPosition);
                 SandBoxMap.Instance[globalPosition] = swapElement;
                 SandBoxMap.Instance[downLeftPosition] = element;
                 return;
@@ -70,7 +74,7 @@ namespace SandBox.Elements.Solid
             if (SandBoxMap.Instance[downRightPosition].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[downRightPosition];
-                SandBoxTool.SwapPosition(ref swapElement, ref element);
+                SandBoxTool.SwapPosition(ref swapElement, ref element, downRightPosition, globalPosition);
                 SandBoxMap.Instance[globalPosition] = swapElement;
                 SandBoxMap.Instance[downRightPosition] = element;
                 return;

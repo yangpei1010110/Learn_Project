@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.IO;
 using Environments;
 using JetBrains.Annotations;
@@ -8,12 +10,14 @@ namespace SandBox.Map
     public class MapSetting
     {
         [CanBeNull] private static MapSetting _instance;
-        public static              MapSetting Instance => _instance ??= new MapSetting();
 
-        public Vector2 SpritePivot         { get; set; } = new(0.5f, 0.5f);
-        public int     MapLocalSizePerUnit { get; set; } = 64;
-        public int     MapPixelPerUnit     { get; set; } = 64;
-        public float   MapWorldSizePerUnit { get; set; } = 1f;
+        public int   MapDirtyOutRange    = 2;
+        public int   MapLocalSizePerUnit = 32;
+        public int   MapPixelPerUnit     = 32;
+        public float MapWorldSizePerUnit = 1f;
+
+        public        Vector2    SpritePivot = new(0.5f, 0.5f);
+        public static MapSetting Instance => _instance ??= new MapSetting();
 
         public static void Load()
         {

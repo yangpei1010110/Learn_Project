@@ -1,3 +1,5 @@
+#nullable enable
+
 using SandBox.Elements.Liquid;
 using SandBox.Elements.Solid;
 using SandBox.Map;
@@ -26,22 +28,33 @@ namespace SandBox
             Gizmos.color = Color.red;
             foreach (MapBlock block in SparseSandBoxMap.Instance._mapBlocks.Values)
             {
-                Vector2 minRect = new Vector2(block._dirtyRectMinX, block._dirtyRectMinY);
-                Vector2 maxRect = new Vector2(block._dirtyRectMaxX, block._dirtyRectMaxY);
+                MapSetting mapSetting = MapSetting.Instance;
+                Vector2Int minRect = new(block._dirtyRectMinX, block._dirtyRectMinY);
+                Vector2Int maxRect = new(block._dirtyRectMaxX, block._dirtyRectMaxY);
 
-                if (maxRect.y < minRect.y || maxRect.x < minRect.x)
+                Vector2 globalMinRect = (Vector2)MapOffset.LocalToGlobal(block.BlockIndex, minRect, mapSetting.MapLocalSizePerUnit);
+                Vector2 globalMaxRect = (Vector2)MapOffset.LocalToGlobal(block.BlockIndex, maxRect, mapSetting.MapLocalSizePerUnit);
+
+                if (globalMaxRect.y < globalMinRect.y || globalMaxRect.x < globalMinRect.x)
                 {
                     continue;
                 }
 
-                MapSetting mapSetting = MapSetting.Instance;
-                Vector2 worldRectMin = (Vector2)block.MapIndex * mapSetting.MapWorldSizePerUnit + (Vector2)minRect / mapSetting.MapLocalSizePerUnit;
-                Vector2 worldRectMax = (Vector2)block.MapIndex * mapSetting.MapWorldSizePerUnit + (Vector2)maxRect / mapSetting.MapLocalSizePerUnit;
+                float pixelSize = mapSetting.MapWorldSizePerUnit / mapSetting.MapLocalSizePerUnit;
+                globalMinRect *= pixelSize;
+                globalMaxRect *= pixelSize;
 
-                Vector2 topLeft = new Vector2(worldRectMin.x, worldRectMax.y);
-                Vector2 topRight = new Vector2(worldRectMax.x, worldRectMax.y);
-                Vector2 bottomLeft = new Vector2(worldRectMin.x, worldRectMin.y);
-                Vector2 bottomRight = new Vector2(worldRectMax.x, worldRectMin.y);
+                globalMinRect.x += pixelSize;
+                globalMinRect.y -= pixelSize;
+                globalMaxRect.x += pixelSize;
+                globalMaxRect.x += pixelSize;
+                // Vector2 worldRectMin = (Vector2)block.BlockIndex * mapSetting.MapWorldSizePerUnit + (Vector2)minRect / mapSetting.MapLocalSizePerUnit;
+                // Vector2 worldRectMax = (Vector2)block.BlockIndex * mapSetting.MapWorldSizePerUnit + (Vector2)maxRect / mapSetting.MapLocalSizePerUnit;
+
+                Vector2 topLeft = new(globalMinRect.x - pixelSize, globalMaxRect.y + pixelSize);
+                Vector2 topRight = new(globalMaxRect.x - pixelSize, globalMaxRect.y + pixelSize);
+                Vector2 bottomLeft = new(globalMinRect.x - pixelSize, globalMinRect.y + pixelSize);
+                Vector2 bottomRight = new(globalMaxRect.x - pixelSize, globalMinRect.y + pixelSize);
 
                 Gizmos.DrawLine(topLeft, topRight);
                 Gizmos.DrawLine(topRight, bottomRight);

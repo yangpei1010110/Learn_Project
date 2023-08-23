@@ -1,3 +1,6 @@
+#nullable enable
+
+using SandBox.Elements.Interface;
 using SandBox.Map;
 using UnityEngine;
 
@@ -5,6 +8,7 @@ namespace SandBox.Elements.Void
 {
     public struct Void : IElement
     {
+        public float       Life           { get; set; }
         public long        Step           { get; set; }
         public Vector2Int  Position       { get; set; }
         public Color       Color          => Color.black;

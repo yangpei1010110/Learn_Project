@@ -6,88 +6,89 @@ namespace SandBox.Map
 {
     /// <summary>
     ///     地图相对坐标计算
+    ///     World: Unity 世界坐标
+    ///     Local: 地图块本地坐标
+    ///     Global: 地图块全局坐标
+    ///     Block: 地图块索引坐标
     /// </summary>
     public static class MapOffset
     {
-        /// <summary>
-        ///     Unity 世界坐标获取地图本地坐标
-        /// </summary>
-        public static Vector2Int WorldToLocal(in Vector2 worldPosition, in int mapLocalSizePerUnit, in float mapWorldSizePerUnit)
+        #region LocalTo
+
+        public static Vector2Int LocalToGlobal(in Vector2Int blockIndex, in Vector2Int localIndex) => blockIndex * MapSetting.MapLocalSizePerUnit + localIndex;
+
+        #endregion
+
+        #region BlockTo
+
+        public static Vector2 BlockToWorld(in Vector2Int blockIndex) => (blockIndex + MapSetting.SpritePivot) * MapSetting.MapWorldSizePerUnit;
+
+        #endregion
+
+        #region WorldTo
+
+        public static Vector2Int WorldToLocal(in Vector2 worldPosition)
         {
-            Vector2Int globalPosition = WorldToGlobal(worldPosition, mapLocalSizePerUnit, mapWorldSizePerUnit);
-            Vector2Int localPosition = GlobalToLocal(globalPosition, mapLocalSizePerUnit);
+            Vector2Int globalPosition = WorldToGlobal(worldPosition);
+            Vector2Int localPosition = GlobalToLocal(globalPosition);
             return localPosition;
         }
 
-        /// <summary>
-        ///     Unity 世界坐标获取地图全局坐标
-        /// </summary>
-        public static Vector2Int WorldToGlobal(in Vector2 worldPosition, in int mapLocalSizePerUnit, in float mapWorldSizePerUnit)
+        public static Vector2Int WorldToGlobal(in Vector2 worldPosition)
         {
             float x = worldPosition.x;
             float y = worldPosition.y;
 
-            x /= mapWorldSizePerUnit;
-            y /= mapWorldSizePerUnit;
+            x /= MapSetting.MapWorldSizePerUnit;
+            y /= MapSetting.MapWorldSizePerUnit;
 
-            x *= mapLocalSizePerUnit;
-            y *= mapLocalSizePerUnit;
+            x *= MapSetting.MapLocalSizePerUnit;
+            y *= MapSetting.MapLocalSizePerUnit;
 
             return new Vector2Int(Mathf.FloorToInt(x), Mathf.FloorToInt(y));
         }
 
-        /// <summary>
-        ///     地图全局坐标获得地图块索引
-        /// </summary>
-        public static Vector2Int GlobalToBlock(in Vector2Int globalIndex, in int mapLocalSizePerUnit)
+        public static Vector2Int WorldToBlock(in Vector2 worldPosition)
+        {
+            float x = worldPosition.x;
+            float y = worldPosition.y;
+
+            x /= MapSetting.MapWorldSizePerUnit;
+            y /= MapSetting.MapWorldSizePerUnit;
+
+            return new Vector2Int(Mathf.FloorToInt(x), Mathf.FloorToInt(y));
+        }
+
+        #endregion
+
+        #region GlobalTo
+
+        public static Vector2Int GlobalToBlock(in Vector2Int globalIndex)
         {
             float x = globalIndex.x;
             float y = globalIndex.y;
 
-            x /= mapLocalSizePerUnit;
-            y /= mapLocalSizePerUnit;
+            x /= MapSetting.MapLocalSizePerUnit;
+            y /= MapSetting.MapLocalSizePerUnit;
 
             return new Vector2Int(Mathf.FloorToInt(x), Mathf.FloorToInt(y));
         }
 
-        /// <summary>
-        ///     从 Unity 世界坐标获取地图块索引
-        /// </summary>
-        public static Vector2Int WorldToBlock(in Vector2 worldPosition, in float mapWorldSizePerUnit)
-        {
-            float x = worldPosition.x;
-            float y = worldPosition.y;
 
-            x /= mapWorldSizePerUnit;
-            y /= mapWorldSizePerUnit;
-
-            return new Vector2Int(Mathf.FloorToInt(x), Mathf.FloorToInt(y));
-        }
-
-        /// <summary>
-        ///     根据相对地图索引和地图全局坐标获得地图局部坐标
-        /// </summary>
-        public static Vector2Int GlobalToLocal(in Vector2Int globalIndex, in int mapLocalSizePerUnit)
+        public static Vector2Int GlobalToLocal(in Vector2Int globalIndex)
         {
             int x = globalIndex.x;
             int y = globalIndex.y;
 
-            x %= mapLocalSizePerUnit;
-            y %= mapLocalSizePerUnit;
+            x %= MapSetting.MapLocalSizePerUnit;
+            y %= MapSetting.MapLocalSizePerUnit;
 
-            x = x < 0 ? x + mapLocalSizePerUnit : x;
-            y = y < 0 ? y + mapLocalSizePerUnit : y;
+            x = x < 0 ? x + MapSetting.MapLocalSizePerUnit : x;
+            y = y < 0 ? y + MapSetting.MapLocalSizePerUnit : y;
 
             return new Vector2Int(x, y);
         }
 
-        /// <summary>
-        ///     根据地图块索引和地图局部坐标获得地图全局坐标
-        /// </summary>
-        public static Vector2Int LocalToGlobal(in Vector2Int blockIndex, in Vector2Int localIndex, in int mapSize)
-        {
-            Vector2Int mapOriginIndex = blockIndex * mapSize;
-            return mapOriginIndex + localIndex;
-        }
+        #endregion
     }
 }

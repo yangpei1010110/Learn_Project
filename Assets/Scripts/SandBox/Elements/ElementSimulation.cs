@@ -1,14 +1,37 @@
 #nullable enable
 
+using System;
 using SandBox.Elements.Interface;
 using SandBox.Map;
 using Tools;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace SandBox.Elements
 {
     public static class ElementSimulation
     {
+        private static void UpdateVelocity(in MapBlock mapBlock, in Vector2Int localIndex, in int deltaTime)
+        {
+            mapBlock[localIndex].Velocity += MapSetting.GravityForce * deltaTime;
+        }
+
+        private static Vector2Int? DetectCollision(in MapBlock mapBlock, in Vector2Int localIndex, in int deltaTime)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void UpdatePosition(in MapBlock mapBlock, in Vector2Int localIndex, in int deltaTime)
+        {
+            var element = mapBlock[localIndex];
+            var velocity = element.Velocity;
+            var globalIndex = MapOffset.LocalToGlobal(mapBlock.BlockIndex, localIndex);
+            var nextWorldPosition = globalIndex + velocity * deltaTime;
+            var nextGlobalIndex = MapOffset.WorldToGlobal(nextWorldPosition);
+            var offset = nextWorldPosition - nextGlobalIndex;
+            element.PositionOffset = offset;
+        }
+
         public static bool Run(in MapBlock mapBlock, ref IElement element)
         {
             switch (element.Type)
@@ -35,7 +58,7 @@ namespace SandBox.Elements
                 element.Step = SparseSandBoxMap.Instance.Step;
             }
 
-            Vector2Int elementGlobal = MapOffset.LocalToGlobal(mapBlock.BlockIndex, element.Position, MapSetting.Instance.MapLocalSizePerUnit);
+            Vector2Int elementGlobal = MapOffset.LocalToGlobal(mapBlock.BlockIndex, element.Position);
             Vector2Int downGlobal = elementGlobal + Vector2Int.down;
             Vector2Int downLeftGlobal = elementGlobal + Vector2Int.down + Vector2Int.left;
             Vector2Int downRightGlobal = elementGlobal + Vector2Int.down + Vector2Int.right;
@@ -96,7 +119,7 @@ namespace SandBox.Elements
                 element.Step = SparseSandBoxMap.Instance.Step;
             }
 
-            Vector2Int elementGlobal = MapOffset.LocalToGlobal(mapBlock.BlockIndex, element.Position, MapSetting.Instance.MapLocalSizePerUnit);
+            Vector2Int elementGlobal = MapOffset.LocalToGlobal(mapBlock.BlockIndex, element.Position);
             Vector2Int downGlobal = elementGlobal + Vector2Int.down;
             Vector2Int downLeftGlobal = elementGlobal + Vector2Int.down + Vector2Int.left;
             Vector2Int downRightGlobal = elementGlobal + Vector2Int.down + Vector2Int.right;

@@ -10,28 +10,28 @@ namespace SandBox.Map
 {
     public class SparseSandBoxMap
     {
-        public IElement this[in Vector2Int globalPosition]
+        public IElement this[in Vector2Int globalIndex]
         {
             get
             {
-                Vector2Int mapBlockIndex = MapOffset.GlobalToBlock(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
+                Vector2Int mapBlockIndex = MapOffset.GlobalToBlock(globalIndex);
                 MapBlock map = _mapBlocks.GetOrNew(mapBlockIndex, CreateMapBlock, mapBlockIndex);
-                Vector2Int mapLocalIndex = MapOffset.GlobalToLocal(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
+                Vector2Int mapLocalIndex = MapOffset.GlobalToLocal(globalIndex);
                 return map[mapLocalIndex];
             }
             set
             {
-                Vector2Int mapBlockIndex = MapOffset.GlobalToBlock(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
+                Vector2Int mapBlockIndex = MapOffset.GlobalToBlock(globalIndex);
                 MapBlock map = _mapBlocks.GetOrNew(mapBlockIndex, CreateMapBlock, mapBlockIndex);
-                Vector2Int mapLocalIndex = MapOffset.GlobalToLocal(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
+                Vector2Int mapLocalIndex = MapOffset.GlobalToLocal(globalIndex);
                 map[mapLocalIndex] = value;
             }
         }
 
         public void SetDirtyPoint(in Vector2Int globalIndex)
         {
-            int mapLocalSizePerUnit = MapSetting.Instance.MapLocalSizePerUnit;
-            int mapDirtyOutRange = MapSetting.Instance.MapDirtyOutRange;
+            int mapLocalSizePerUnit = MapSetting.MapLocalSizePerUnit;
+            int mapDirtyOutRange = MapSetting.MapDirtyOutRange;
 
             Vector2Int dirtyMin = new(
                 Mathf.Clamp(globalIndex.x - mapDirtyOutRange, 0, mapLocalSizePerUnit - 1),
@@ -47,7 +47,7 @@ namespace SandBox.Map
 
         public void UpdateParticles()
         {
-            Instance.Step += 1;
+            Step += 1;
             foreach (MapBlock mapBlock in _mapBlocks.Values.ToArray())
             {
                 mapBlock.UpdateElement();

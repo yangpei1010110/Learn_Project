@@ -1,6 +1,7 @@
 #nullable enable
 
 using SandBox.Elements.Interface;
+using SandBox.Map.SpriteMap;
 using UnityEngine;
 
 namespace SandBox.Map
@@ -9,32 +10,26 @@ namespace SandBox.Map
     {
         public IElement this[in Vector2 worldPosition]
         {
-            get => this[MapOffset.WorldToGlobal(
-                            worldPosition,
-                            MapSetting.Instance.MapLocalSizePerUnit,
-                            MapSetting.Instance.MapWorldSizePerUnit)];
-            set => this[MapOffset.WorldToGlobal(
-                            worldPosition,
-                            MapSetting.Instance.MapLocalSizePerUnit,
-                            MapSetting.Instance.MapWorldSizePerUnit)] = value;
+            get => this[MapOffset.WorldToGlobal(worldPosition)];
+            set => this[MapOffset.WorldToGlobal(worldPosition)] = value;
         }
         public IElement this[in Vector2Int globalPosition]
         {
             get => SparseSandBoxMap.Instance[globalPosition];
             set
             {
-                value.Position = MapOffset.GlobalToLocal(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
+                value.Position = MapOffset.GlobalToLocal(globalPosition);
                 SparseSandBoxMap.Instance[globalPosition] = value;
-                SparseSpriteMap.Instance[globalPosition] = SparseSandBoxMap.Instance[globalPosition].Color;
+                SparseSpriteMap2.Instance[globalPosition] = SparseSandBoxMap.Instance[globalPosition].Color;
             }
         }
 
-        public bool Exist(in Vector2Int globalPosition) => SparseSandBoxMap.Instance.ContainKey(MapOffset.GlobalToBlock(globalPosition, MapSetting.Instance.MapLocalSizePerUnit));
+        public bool Exist(in Vector2Int globalPosition) => SparseSandBoxMap.Instance.ContainKey(MapOffset.GlobalToBlock(globalPosition));
 
         public void UpdateMap()
         {
             SparseSandBoxMap.Instance.UpdateParticles();
-            SparseSpriteMap.Instance.Flush();
+            SparseSpriteMap2.Instance.Flush();
         }
 
         #region Instance

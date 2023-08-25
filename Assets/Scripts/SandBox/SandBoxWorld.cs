@@ -1,8 +1,10 @@
 #nullable enable
 
+using System.Collections.Generic;
 using SandBox.Elements.Liquid;
 using SandBox.Elements.Solid;
 using SandBox.Map;
+using SandBox.Map.SpriteMap;
 using Tools;
 using Unity.Mathematics;
 using UnityEngine;
@@ -30,19 +32,18 @@ namespace SandBox
             Gizmos.color = Color.red;
             foreach (MapBlock block in SparseSandBoxMap.Instance._mapBlocks.Values)
             {
-                MapSetting mapSetting = MapSetting.Instance;
                 Vector2Int minRect = new(block._dirtyRectMinX, block._dirtyRectMinY);
                 Vector2Int maxRect = new(block._dirtyRectMaxX, block._dirtyRectMaxY);
 
-                Vector2 globalMinRect = (Vector2)MapOffset.LocalToGlobal(block.BlockIndex, minRect, mapSetting.MapLocalSizePerUnit);
-                Vector2 globalMaxRect = (Vector2)MapOffset.LocalToGlobal(block.BlockIndex, maxRect, mapSetting.MapLocalSizePerUnit);
+                Vector2 globalMinRect = (Vector2)MapOffset.LocalToGlobal(block.BlockIndex, minRect);
+                Vector2 globalMaxRect = (Vector2)MapOffset.LocalToGlobal(block.BlockIndex, maxRect);
 
                 if (globalMaxRect.y < globalMinRect.y || globalMaxRect.x < globalMinRect.x)
                 {
                     continue;
                 }
 
-                float pixelSize = mapSetting.MapWorldSizePerUnit / mapSetting.MapLocalSizePerUnit;
+                float pixelSize = MapSetting.MapWorldSizePerUnit / MapSetting.MapLocalSizePerUnit;
                 globalMinRect *= pixelSize;
                 globalMaxRect *= pixelSize;
 
@@ -81,20 +82,12 @@ namespace SandBox
                 }
             }
             {
-                if (Input.GetKeyDown(KeyCode.Q))
-                {
-                    mouseCircleRadius--;
-                }
-                else if (Input.GetKeyDown(KeyCode.E))
-                {
-                    mouseCircleRadius++;
-                }
-
-                mouseCircleRadius = math.clamp(mouseCircleRadius, 1, 10);
+                mouseCircleRadiusY = math.clamp(mouseCircleRadiusY + Input.mouseScrollDelta.y, 0f, maxMouseCircleRadius);
+                mouseCircleRadius = (int)mouseCircleRadiusY;
             }
             {
                 Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition, MapSetting.Instance.MapLocalSizePerUnit, MapSetting.Instance.MapWorldSizePerUnit);
+                Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);
                 UpdateCircleSprite(mouseGlobalIndex);
             }
         }
@@ -106,29 +99,24 @@ namespace SandBox
 
         #region 鼠标范围显示
 
-        private int         mouseCircleRadius = 1;
-        private Vector2Int? lastUpdateSpriteIndex;
+        private float               mouseCircleRadiusY    = 1f;
+        private int                 mouseCircleRadius     = 1;
+        private int                 maxMouseCircleRadius  = 100;
+        private HashSet<Vector2Int> lastUpdateSpriteIndex = new();
 
         private void UpdateCircleSprite(in Vector2Int mouseGlobalIndex)
         {
             // 更新最后一帧的区块
-            if (lastUpdateSpriteIndex.HasValue)
+            foreach (Vector2Int blockIndex in lastUpdateSpriteIndex)
             {
-                SparseSpriteMap.Instance.UpdateColorFormMapBlock(lastUpdateSpriteIndex.Value);
+                SparseSpriteMap2.Instance.UpdateColorFormMapBlock(blockIndex);
             }
 
-            // 鼠标指向的区块不存在
-            if (!SandBoxMap.Exist(mouseGlobalIndex))
+            CircleTool2D.DrawCircle(mouseGlobalIndex, mouseCircleRadius, pixel =>
             {
-                return;
-            }
-
-            Vector2Int blockIndex = MapOffset.GlobalToBlock(mouseGlobalIndex, MapSetting.Instance.MapLocalSizePerUnit);
-            Vector2Int localIndex = MapOffset.GlobalToLocal(mouseGlobalIndex, MapSetting.Instance.MapLocalSizePerUnit);
-            Texture2D texture = SparseSpriteMap.Instance._mapBlockTexture[blockIndex];
-            CircleTool2D.DrawCircle(localIndex, mouseCircleRadius, pixel => texture.SetPixel(pixel.x, pixel.y, Color.white));
-            texture.Apply();
-            lastUpdateSpriteIndex = blockIndex;
+                SparseSpriteMap2.Instance.SafeSet(pixel, Color.white);
+                lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(pixel));
+            });
         }
 
         #endregion

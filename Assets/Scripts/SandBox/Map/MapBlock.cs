@@ -13,18 +13,18 @@ namespace SandBox.Map
 
         public IElement this[in Vector2Int localPosition]
         {
-            get => MapElements[localPosition.x + localPosition.y * MapSetting.Instance.MapLocalSizePerUnit];
+            get => MapElements[localPosition.x + localPosition.y * MapSetting.MapLocalSizePerUnit];
             set
             {
-                MapElements[localPosition.x + localPosition.y * MapSetting.Instance.MapLocalSizePerUnit] = value;
+                MapElements[localPosition.x + localPosition.y * MapSetting.MapLocalSizePerUnit] = value;
                 SetDirtyPoint(localPosition);
             }
         }
 
         public void SetDirtyPoint(in Vector2Int localDirtyPoint)
         {
-            int mapLocalSizePerUnit = MapSetting.Instance.MapLocalSizePerUnit;
-            int mapDirtyOutRange = MapSetting.Instance.MapDirtyOutRange;
+            int mapLocalSizePerUnit = MapSetting.MapLocalSizePerUnit;
+            int mapDirtyOutRange = MapSetting.MapDirtyOutRange;
 
             Vector2Int dirtyMin = new(
                 Mathf.Clamp(localDirtyPoint.x - mapDirtyOutRange, 0, mapLocalSizePerUnit - 1),
@@ -47,8 +47,8 @@ namespace SandBox.Map
 
         public void UpdateElement()
         {
-            int mapLocalSizePerUnit = MapSetting.Instance.MapLocalSizePerUnit;
-            int mapDirtyOutRange = MapSetting.Instance.MapDirtyOutRange;
+            int mapLocalSizePerUnit = MapSetting.MapLocalSizePerUnit;
+            int mapDirtyOutRange = MapSetting.MapDirtyOutRange;
             int xMin = _dirtyRectMinX;
             int xMax = _dirtyRectMaxX;
             int yMin = _dirtyRectMinY;
@@ -78,12 +78,12 @@ namespace SandBox.Map
 
         private IElement[] Create()
         {
-            IElement[] elements = new IElement[MapSetting.Instance.MapLocalSizePerUnit * MapSetting.Instance.MapLocalSizePerUnit];
-            for (int i = 0; i < MapSetting.Instance.MapLocalSizePerUnit; i++)
+            IElement[] elements = new IElement[MapSetting.MapLocalSizePerUnit * MapSetting.MapLocalSizePerUnit];
+            for (int i = 0; i < MapSetting.MapLocalSizePerUnit; i++)
             {
-                for (int j = 0; j < MapSetting.Instance.MapLocalSizePerUnit; j++)
+                for (int j = 0; j < MapSetting.MapLocalSizePerUnit; j++)
                 {
-                    elements[i + j * MapSetting.Instance.MapLocalSizePerUnit] = new Void()
+                    elements[i + j * MapSetting.MapLocalSizePerUnit] = new Void()
                     {
                         Position = new Vector2Int(i, j),
                     };
@@ -116,7 +116,7 @@ namespace SandBox.Map
 
         public void SetFullDirtyRect()
         {
-            int mapLocalSizePerUnit = MapSetting.Instance.MapLocalSizePerUnit;
+            int mapLocalSizePerUnit = MapSetting.MapLocalSizePerUnit;
             SetDirtyPoint(new Vector2Int(0, 0));
             SetDirtyPoint(new Vector2Int(mapLocalSizePerUnit - 1, mapLocalSizePerUnit - 1));
         }

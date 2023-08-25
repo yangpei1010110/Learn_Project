@@ -3,6 +3,7 @@
 using SandBox.Elements;
 using SandBox.Elements.Interface;
 using SandBox.Elements.Void;
+using SandBox.Map.SandBox;
 using UnityEngine;
 
 namespace SandBox.Map

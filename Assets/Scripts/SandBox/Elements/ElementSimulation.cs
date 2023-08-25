@@ -3,12 +3,14 @@
 using System;
 using SandBox.Elements.Interface;
 using SandBox.Map;
+using SandBox.Map.SandBox;
 using Tools;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace SandBox.Elements
 {
+    // TODO 将粒子更新修改为不需要储存变量地址的方式
     public static class ElementSimulation
     {
         private static void UpdateVelocity(in MapBlock mapBlock, in Vector2Int localIndex, in int deltaTime)
@@ -16,19 +18,16 @@ namespace SandBox.Elements
             mapBlock[localIndex].Velocity += MapSetting.GravityForce * deltaTime;
         }
 
-        private static Vector2Int? DetectCollision(in MapBlock mapBlock, in Vector2Int localIndex, in int deltaTime)
-        {
-            throw new NotImplementedException();
-        }
+        private static Vector2Int? DetectCollision(in MapBlock mapBlock, in Vector2Int localIndex, in int deltaTime) => throw new NotImplementedException();
 
         private static void UpdatePosition(in MapBlock mapBlock, in Vector2Int localIndex, in int deltaTime)
         {
-            var element = mapBlock[localIndex];
-            var velocity = element.Velocity;
-            var globalIndex = MapOffset.LocalToGlobal(mapBlock.BlockIndex, localIndex);
-            var nextWorldPosition = globalIndex + velocity * deltaTime;
-            var nextGlobalIndex = MapOffset.WorldToGlobal(nextWorldPosition);
-            var offset = nextWorldPosition - nextGlobalIndex;
+            IElement element = mapBlock[localIndex];
+            Vector2 velocity = element.Velocity;
+            Vector2Int globalIndex = MapOffset.LocalToGlobal(mapBlock.BlockIndex, localIndex);
+            Vector2 nextWorldPosition = globalIndex + velocity * deltaTime;
+            Vector2Int nextGlobalIndex = MapOffset.WorldToGlobal(nextWorldPosition);
+            Vector2 offset = nextWorldPosition - nextGlobalIndex;
             element.PositionOffset = offset;
         }
 

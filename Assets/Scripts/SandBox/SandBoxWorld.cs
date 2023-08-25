@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using SandBox.Elements.Liquid;
 using SandBox.Elements.Solid;
 using SandBox.Map;
-using SandBox.Map.SpriteMap;
+using SandBox.Map.SandBox;
+using SandBox.Map.Sprite;
 using Tools;
 using Unity.Mathematics;
 using UnityEngine;
@@ -109,12 +110,12 @@ namespace SandBox
             // 更新最后一帧的区块
             foreach (Vector2Int blockIndex in lastUpdateSpriteIndex)
             {
-                SparseSpriteMap2.Instance.UpdateColorFormMapBlock(blockIndex);
+                SparseSpriteMap.Instance.UpdateColorFormMapBlock(blockIndex);
             }
 
             CircleTool2D.DrawCircle(mouseGlobalIndex, mouseCircleRadius, pixel =>
             {
-                SparseSpriteMap2.Instance.SafeSet(pixel, Color.white);
+                SparseSpriteMap.Instance.SafeSet(pixel, Color.white);
                 lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(pixel));
             });
         }

@@ -1,7 +1,8 @@
 #nullable enable
 
 using SandBox.Elements.Interface;
-using SandBox.Map.SpriteMap;
+using SandBox.Map.SandBox;
+using SandBox.Map.Sprite;
 using UnityEngine;
 
 namespace SandBox.Map
@@ -20,7 +21,7 @@ namespace SandBox.Map
             {
                 value.Position = MapOffset.GlobalToLocal(globalPosition);
                 SparseSandBoxMap.Instance[globalPosition] = value;
-                SparseSpriteMap2.Instance[globalPosition] = SparseSandBoxMap.Instance[globalPosition].Color;
+                SparseSpriteMap.Instance[globalPosition] = SparseSandBoxMap.Instance[globalPosition].Color;
             }
         }
 
@@ -29,7 +30,7 @@ namespace SandBox.Map
         public void UpdateMap()
         {
             SparseSandBoxMap.Instance.UpdateParticles();
-            SparseSpriteMap2.Instance.Flush();
+            SparseSpriteMap.Instance.Flush();
         }
 
         #region Instance

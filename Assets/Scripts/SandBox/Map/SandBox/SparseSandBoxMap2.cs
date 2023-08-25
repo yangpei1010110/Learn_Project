@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Extensions;
 using UnityEngine;
 
-namespace SandBox.Map
+namespace SandBox.Map.SandBox
 {
     public class SparseSandBoxMap2<T>
     {

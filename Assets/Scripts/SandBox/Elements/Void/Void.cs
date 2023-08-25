@@ -1,7 +1,7 @@
 #nullable enable
 
 using SandBox.Elements.Interface;
-using SandBox.Map;
+using SandBox.Map.SandBox;
 using UnityEngine;
 
 namespace SandBox.Elements.Void

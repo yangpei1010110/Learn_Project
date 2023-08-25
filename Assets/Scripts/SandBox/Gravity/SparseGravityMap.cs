@@ -9,6 +9,5 @@ namespace SandBox.Gravity
         public static  SparseGravityMap  Instance => _instance ??= new SparseGravityMap();
 
         #endregion
-        
     }
 }

@@ -6,7 +6,7 @@ using Extensions;
 using SandBox.Elements.Interface;
 using UnityEngine;
 
-namespace SandBox.Map
+namespace SandBox.Map.SandBox
 {
     public class SparseSandBoxMap
     {

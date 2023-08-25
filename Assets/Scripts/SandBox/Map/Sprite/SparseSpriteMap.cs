@@ -1,12 +1,12 @@
 #nullable enable
 
 using System.Collections.Generic;
-using SandBox.Elements.Interface;
+using SandBox.Map.SandBox;
 using UnityEngine;
 
-namespace SandBox.Map.SpriteMap
+namespace SandBox.Map.Sprite
 {
-    public class SparseSpriteMap2
+    public class SparseSpriteMap
     {
         /// <summary>
         ///     获取或设置颜色
@@ -30,8 +30,8 @@ namespace SandBox.Map.SpriteMap
 
         public void SafeSet(in Vector2Int globalIndex, in Color color)
         {
-            var blockIndex = MapOffset.GlobalToBlock(globalIndex);
-            if (_mapBlockTexture.TryGetValue(blockIndex, out var value))
+            Vector2Int blockIndex = MapOffset.GlobalToBlock(globalIndex);
+            if (_mapBlockTexture.TryGetValue(blockIndex, out Texture2D? value))
             {
                 Vector2Int localIndex = MapOffset.GlobalToLocal(globalIndex);
                 value.SetPixel(localIndex.x, localIndex.y, color);
@@ -61,7 +61,7 @@ namespace SandBox.Map.SpriteMap
                 go.transform.position = MapOffset.BlockToWorld(blockIndex);
 
                 Texture2D tex2D = CreateTexture();
-                Sprite sprite = CreateSprite(tex2D);
+                UnityEngine.Sprite sprite = CreateSprite(tex2D);
 
                 go.GetComponent<SpriteRenderer>().sprite = sprite;
 
@@ -72,11 +72,11 @@ namespace SandBox.Map.SpriteMap
             }
         }
 
-        private Sprite CreateSprite(in Texture2D texture) =>
-            Sprite.Create(texture,
-                          new Rect(0, 0, texture.width, texture.height),
-                          MapSetting.SpritePivot,
-                          MapSetting.MapLocalSizePerUnit);
+        private UnityEngine.Sprite CreateSprite(in Texture2D texture) =>
+            UnityEngine.Sprite.Create(texture,
+                                      new Rect(0, 0, texture.width, texture.height),
+                                      MapSetting.SpritePivot,
+                                      MapSetting.MapLocalSizePerUnit);
 
         private Texture2D CreateTexture()
         {
@@ -134,8 +134,8 @@ namespace SandBox.Map.SpriteMap
 
         #region Instance
 
-        private static SparseSpriteMap2? _instance;
-        public static  SparseSpriteMap2  Instance => _instance ??= new SparseSpriteMap2();
+        private static SparseSpriteMap? _instance;
+        public static  SparseSpriteMap  Instance => _instance ??= new SparseSpriteMap();
 
         #endregion
 
@@ -149,10 +149,10 @@ namespace SandBox.Map.SpriteMap
 
         #region Data
 
-        private HashSet<Vector2Int>               _dirtyBlocks     = new();
-        private HashSet<Vector2Int>               _guiBlocks       = new();
-        private Dictionary<Vector2Int, Sprite>    _mapBlockSprite  = new();
-        private Dictionary<Vector2Int, Texture2D> _mapBlockTexture = new();
+        private HashSet<Vector2Int>                        _dirtyBlocks     = new();
+        private HashSet<Vector2Int>                        _guiBlocks       = new();
+        private Dictionary<Vector2Int, UnityEngine.Sprite> _mapBlockSprite  = new();
+        private Dictionary<Vector2Int, Texture2D>          _mapBlockTexture = new();
 
         #endregion
     }

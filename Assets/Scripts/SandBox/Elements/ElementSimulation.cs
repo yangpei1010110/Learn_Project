@@ -47,7 +47,7 @@ namespace SandBox.Elements
             else if (SandBoxMap.Instance[downGlobal].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[downGlobal];
-                SandBoxTool.SwapPosition(ref swapElement, ref element, downGlobal, elementGlobal);
+                SandBoxTool.SwapGlobalIndex(ref swapElement, ref element, downGlobal, elementGlobal);
                 SandBoxMap.Instance[elementGlobal] = swapElement;
                 SandBoxMap.Instance[downGlobal] = element;
                 return true;
@@ -62,7 +62,7 @@ namespace SandBox.Elements
             else if (SandBoxMap.Instance[newDownGlobal].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[newDownGlobal];
-                SandBoxTool.SwapPosition(ref swapElement, ref element, newDownGlobal, elementGlobal);
+                SandBoxTool.SwapGlobalIndex(ref swapElement, ref element, newDownGlobal, elementGlobal);
                 SandBoxMap.Instance[elementGlobal] = swapElement;
                 SandBoxMap.Instance[newDownGlobal] = element;
                 return true;
@@ -76,7 +76,7 @@ namespace SandBox.Elements
             else if (SandBoxMap.Instance[newDownGlobal].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[newDownGlobal];
-                SandBoxTool.SwapPosition(ref swapElement, ref element, newDownGlobal, elementGlobal);
+                SandBoxTool.SwapGlobalIndex(ref swapElement, ref element, newDownGlobal, elementGlobal);
                 SandBoxMap.Instance[elementGlobal] = swapElement;
                 SandBoxMap.Instance[newDownGlobal] = element;
                 return true;
@@ -110,7 +110,7 @@ namespace SandBox.Elements
             else if (SandBoxMap.Instance[downGlobal].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[downGlobal];
-                SandBoxTool.SwapPosition(ref swapElement, ref element, downGlobal, elementGlobal);
+                SandBoxTool.SwapGlobalIndex(ref swapElement, ref element, downGlobal, elementGlobal);
                 SandBoxMap.Instance[elementGlobal] = swapElement;
                 SandBoxMap.Instance[downGlobal] = element;
                 return true;
@@ -125,7 +125,7 @@ namespace SandBox.Elements
             else if (SandBoxMap.Instance[newDownGlobal].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[newDownGlobal];
-                SandBoxTool.SwapPosition(ref swapElement, ref element, newDownGlobal, elementGlobal);
+                SandBoxTool.SwapGlobalIndex(ref swapElement, ref element, newDownGlobal, elementGlobal);
                 SandBoxMap.Instance[elementGlobal] = swapElement;
                 SandBoxMap.Instance[newDownGlobal] = element;
                 return true;
@@ -139,7 +139,7 @@ namespace SandBox.Elements
             else if (SandBoxMap.Instance[newDownGlobal].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[newDownGlobal];
-                SandBoxTool.SwapPosition(ref swapElement, ref element, newDownGlobal, elementGlobal);
+                SandBoxTool.SwapGlobalIndex(ref swapElement, ref element, newDownGlobal, elementGlobal);
                 SandBoxMap.Instance[elementGlobal] = swapElement;
                 SandBoxMap.Instance[newDownGlobal] = element;
                 return true;
@@ -153,7 +153,7 @@ namespace SandBox.Elements
             else if (SandBoxMap.Instance[newGlobal].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[newGlobal];
-                SandBoxTool.SwapPosition(ref swapElement, ref element, newGlobal, elementGlobal);
+                SandBoxTool.SwapGlobalIndex(ref swapElement, ref element, newGlobal, elementGlobal);
                 SandBoxMap.Instance[elementGlobal] = swapElement;
                 SandBoxMap.Instance[newGlobal] = element;
                 return true;
@@ -167,7 +167,7 @@ namespace SandBox.Elements
             else if (SandBoxMap.Instance[newGlobal].Density < element.Density)
             {
                 IElement swapElement = SandBoxMap.Instance[newGlobal];
-                SandBoxTool.SwapPosition(ref swapElement, ref element, newGlobal, elementGlobal);
+                SandBoxTool.SwapGlobalIndex(ref swapElement, ref element, newGlobal, elementGlobal);
                 SandBoxMap.Instance[elementGlobal] = swapElement;
                 SandBoxMap.Instance[newGlobal] = element;
                 return true;

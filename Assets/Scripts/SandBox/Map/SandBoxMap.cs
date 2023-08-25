@@ -1,6 +1,5 @@
 #nullable enable
 
-using JetBrains.Annotations;
 using SandBox.Elements.Interface;
 using UnityEngine;
 
@@ -30,7 +29,7 @@ namespace SandBox.Map
             }
         }
 
-        public bool Exist(Vector2Int globalPosition) => SparseSandBoxMap.Instance.ContainKey(MapOffset.BlockIndex(globalPosition, MapSetting.Instance.MapLocalSizePerUnit));
+        public bool Exist(Vector2Int globalPosition) => SparseSandBoxMap.Instance.ContainKey(MapOffset.GlobalToBlock(globalPosition, MapSetting.Instance.MapLocalSizePerUnit));
 
         public void UpdateMap()
         {
@@ -40,8 +39,8 @@ namespace SandBox.Map
 
         #region Instance
 
-        [CanBeNull] private static SandBoxMap _instance;
-        public static              SandBoxMap Instance => _instance ??= new SandBoxMap();
+        private static SandBoxMap? _instance;
+        public static  SandBoxMap  Instance => _instance ??= new SandBoxMap();
 
         #endregion
     }

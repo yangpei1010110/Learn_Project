@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Extensions;
-using JetBrains.Annotations;
 using SandBox.Elements.Interface;
 using UnityEngine;
 
@@ -15,14 +14,14 @@ namespace SandBox.Map
         {
             get
             {
-                Vector2Int mapBlockIndex = MapOffset.BlockIndex(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
+                Vector2Int mapBlockIndex = MapOffset.GlobalToBlock(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
                 MapBlock map = _mapBlocks.GetOrNew(mapBlockIndex, CreateMapBlock, mapBlockIndex);
                 Vector2Int mapLocalIndex = MapOffset.GlobalToLocal(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
                 return map[mapLocalIndex];
             }
             set
             {
-                Vector2Int mapBlockIndex = MapOffset.BlockIndex(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
+                Vector2Int mapBlockIndex = MapOffset.GlobalToBlock(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
                 MapBlock map = _mapBlocks.GetOrNew(mapBlockIndex, CreateMapBlock, mapBlockIndex);
                 Vector2Int mapLocalIndex = MapOffset.GlobalToLocal(globalPosition, MapSetting.Instance.MapLocalSizePerUnit);
                 map[mapLocalIndex] = value;
@@ -65,8 +64,8 @@ namespace SandBox.Map
 
         #region Instance
 
-        [CanBeNull] private static SparseSandBoxMap _instance;
-        public static              SparseSandBoxMap Instance => _instance ??= new SparseSandBoxMap();
+        private static SparseSandBoxMap? _instance;
+        public static  SparseSandBoxMap  Instance => _instance ??= new SparseSandBoxMap();
 
         #endregion
     }

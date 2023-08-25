@@ -3,6 +3,8 @@
 using SandBox.Elements.Liquid;
 using SandBox.Elements.Solid;
 using SandBox.Map;
+using Tools;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace SandBox
@@ -66,15 +68,34 @@ namespace SandBox
 
         private void UpdateInput()
         {
-            if (Input.GetMouseButton(0))
             {
-                Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                SandBoxMap[mousePosition] = new Sand();
+                if (Input.GetMouseButton(0))
+                {
+                    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                    SandBoxMap[mousePosition] = new Sand();
+                }
+                else if (Input.GetMouseButton(1))
+                {
+                    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                    SandBoxMap[mousePosition] = new Water();
+                }
             }
-            else if (Input.GetMouseButton(1))
+            {
+                if (Input.GetKeyDown(KeyCode.Q))
+                {
+                    mouseCircleRadius--;
+                }
+                else if (Input.GetKeyDown(KeyCode.E))
+                {
+                    mouseCircleRadius++;
+                }
+
+                mouseCircleRadius = math.clamp(mouseCircleRadius, 1, 10);
+            }
             {
                 Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                SandBoxMap[mousePosition] = new Water();
+                Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition, MapSetting.Instance.MapLocalSizePerUnit, MapSetting.Instance.MapWorldSizePerUnit);
+                UpdateCircleSprite(mouseGlobalIndex);
             }
         }
 
@@ -82,5 +103,34 @@ namespace SandBox
         {
             SandBoxMap.UpdateMap();
         }
+
+        #region 鼠标范围显示
+
+        private int         mouseCircleRadius = 1;
+        private Vector2Int? lastUpdateSpriteIndex;
+
+        private void UpdateCircleSprite(in Vector2Int mouseGlobalIndex)
+        {
+            // 更新最后一帧的区块
+            if (lastUpdateSpriteIndex.HasValue)
+            {
+                SparseSpriteMap.Instance.UpdateColorFormMapBlock(lastUpdateSpriteIndex.Value);
+            }
+
+            // 鼠标指向的区块不存在
+            if (!SandBoxMap.Exist(mouseGlobalIndex))
+            {
+                return;
+            }
+
+            Vector2Int blockIndex = MapOffset.GlobalToBlock(mouseGlobalIndex, MapSetting.Instance.MapLocalSizePerUnit);
+            Vector2Int localIndex = MapOffset.GlobalToLocal(mouseGlobalIndex, MapSetting.Instance.MapLocalSizePerUnit);
+            Texture2D texture = SparseSpriteMap.Instance._mapBlockTexture[blockIndex];
+            CircleTool2D.DrawCircle(localIndex, mouseCircleRadius, pixel => texture.SetPixel(pixel.x, pixel.y, Color.white));
+            texture.Apply();
+            lastUpdateSpriteIndex = blockIndex;
+        }
+
+        #endregion
     }
 }

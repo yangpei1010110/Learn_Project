@@ -33,7 +33,7 @@ namespace SandBox.Elements.Liquid
             if (canMoveGlobalPosition != null)
             {
                 IElement swapElement = SandBoxMap.Instance[canMoveGlobalPosition.Value];
-                SandBoxTool.SwapPosition(ref swapElement, ref element, canMoveGlobalPosition.Value, globalPosition);
+                SandBoxTool.SwapGlobalIndex(ref swapElement, ref element, canMoveGlobalPosition.Value, globalPosition);
                 SandBoxMap.Instance[globalPosition] = swapElement;
                 SandBoxMap.Instance[canMoveGlobalPosition.Value] = element;
                 return;

@@ -12,7 +12,7 @@ namespace SandBox.Map
         /// <summary>
         ///     Unity 世界坐标获取地图本地坐标
         /// </summary>
-        public static Vector2Int WorldToLocal(Vector2 worldPosition, int mapLocalSizePerUnit, float mapWorldSizePerUnit)
+        public static Vector2Int WorldToLocal(in Vector2 worldPosition, in int mapLocalSizePerUnit, in float mapWorldSizePerUnit)
         {
             Vector2Int globalPosition = WorldToGlobal(worldPosition, mapLocalSizePerUnit, mapWorldSizePerUnit);
             Vector2Int localPosition = GlobalToLocal(globalPosition, mapLocalSizePerUnit);
@@ -22,7 +22,7 @@ namespace SandBox.Map
         /// <summary>
         ///     Unity 世界坐标获取地图全局坐标
         /// </summary>
-        public static Vector2Int WorldToGlobal(Vector2 worldPosition, int mapLocalSizePerUnit, float mapWorldSizePerUnit)
+        public static Vector2Int WorldToGlobal(in Vector2 worldPosition, in int mapLocalSizePerUnit, in float mapWorldSizePerUnit)
         {
             float x = worldPosition.x;
             float y = worldPosition.y;
@@ -39,10 +39,10 @@ namespace SandBox.Map
         /// <summary>
         ///     地图全局坐标获得地图块索引
         /// </summary>
-        public static Vector2Int BlockIndex(Vector2Int globalPosition, int mapLocalSizePerUnit)
+        public static Vector2Int GlobalToBlock(in Vector2Int globalIndex, in int mapLocalSizePerUnit)
         {
-            float x = globalPosition.x;
-            float y = globalPosition.y;
+            float x = globalIndex.x;
+            float y = globalIndex.y;
 
             x /= mapLocalSizePerUnit;
             y /= mapLocalSizePerUnit;
@@ -53,7 +53,7 @@ namespace SandBox.Map
         /// <summary>
         ///     从 Unity 世界坐标获取地图块索引
         /// </summary>
-        public static Vector2Int BlockIndex(Vector2 worldPosition, float mapWorldSizePerUnit)
+        public static Vector2Int WorldToBlock(in Vector2 worldPosition, in float mapWorldSizePerUnit)
         {
             float x = worldPosition.x;
             float y = worldPosition.y;
@@ -67,26 +67,26 @@ namespace SandBox.Map
         /// <summary>
         ///     根据相对地图索引和地图全局坐标获得地图局部坐标
         /// </summary>
-        public static Vector2Int GlobalToLocal(Vector2Int globalPosition, int mapLocalSizePerUnit)
+        public static Vector2Int GlobalToLocal(in Vector2Int globalIndex, in int mapLocalSizePerUnit)
         {
-            int x = globalPosition.x;
-            int y = globalPosition.y;
+            int x = globalIndex.x;
+            int y = globalIndex.y;
 
             x %= mapLocalSizePerUnit;
             y %= mapLocalSizePerUnit;
 
-            globalPosition.x = x < 0 ? x + mapLocalSizePerUnit : x;
-            globalPosition.y = y < 0 ? y + mapLocalSizePerUnit : y;
+            x = x < 0 ? x + mapLocalSizePerUnit : x;
+            y = y < 0 ? y + mapLocalSizePerUnit : y;
 
-            return globalPosition;
+            return new Vector2Int(x, y);
         }
 
         /// <summary>
         ///     根据地图块索引和地图局部坐标获得地图全局坐标
         /// </summary>
-        public static Vector2Int LocalToGlobal(Vector2Int mapBlockIndex, Vector2Int localIndex, int mapSize)
+        public static Vector2Int LocalToGlobal(in Vector2Int blockIndex, in Vector2Int localIndex, in int mapSize)
         {
-            Vector2Int mapOriginIndex = mapBlockIndex * mapSize;
+            Vector2Int mapOriginIndex = blockIndex * mapSize;
             return mapOriginIndex + localIndex;
         }
     }

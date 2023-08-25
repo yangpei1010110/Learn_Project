@@ -2,18 +2,17 @@
 
 using System.IO;
 using Environments;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace SandBox.Map
 {
     public class MapSetting
     {
-        [CanBeNull] private static MapSetting _instance;
+        private static MapSetting? _instance;
 
         public int   MapDirtyOutRange    = 2;
-        public int   MapLocalSizePerUnit = 32;
-        public int   MapPixelPerUnit     = 32;
+        public int   MapLocalSizePerUnit = 64;
+        public int   MapPixelPerUnit     = 64;
         public float MapWorldSizePerUnit = 1f;
 
         public        Vector2    SpritePivot = new(0.5f, 0.5f);

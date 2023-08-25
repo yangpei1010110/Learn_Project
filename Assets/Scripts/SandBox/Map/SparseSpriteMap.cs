@@ -13,7 +13,7 @@ namespace SandBox.Map
         /// <summary>
         ///     获取或设置颜色
         /// </summary>
-        public Color this[Vector2Int globalPosition]
+        public Color this[in Vector2Int globalPosition]
         {
             get
             {
@@ -39,7 +39,7 @@ namespace SandBox.Map
             _mapBlockTexture.Clear();
         }
 
-        private void CheckOrCreateByBlockIndex(Vector2Int blockIndex)
+        private void CheckOrCreateByBlockIndex(in Vector2Int blockIndex)
         {
             if (_mapBlockSprite.ContainsKey(blockIndex))
             {
@@ -64,7 +64,7 @@ namespace SandBox.Map
             }
         }
 
-        private Sprite CreateSprite(Texture2D texture) =>
+        private Sprite CreateSprite(in Texture2D texture) =>
             Sprite.Create(texture,
                           new Rect(0, 0, texture.width, texture.height),
                           MapSetting.Instance.SpritePivot,
@@ -101,7 +101,7 @@ namespace SandBox.Map
             _dirtyBlocks.Clear();
         }
 
-        public void UpdateColorFormMapBlock(Vector2Int blockIndex)
+        public void UpdateColorFormMapBlock(in Vector2Int blockIndex)
         {
             if (_mapBlockTexture.TryGetValue(blockIndex, out Texture2D? texture))
             {

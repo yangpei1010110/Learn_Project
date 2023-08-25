@@ -10,7 +10,7 @@ namespace SandBox.Map
 {
     public class SparseSandBoxMap
     {
-        public IElement this[Vector2Int globalPosition]
+        public IElement this[in Vector2Int globalPosition]
         {
             get
             {
@@ -41,7 +41,7 @@ namespace SandBox.Map
                 Mathf.Clamp(globalIndex.y + mapDirtyOutRange, 0, mapLocalSizePerUnit - 1));
         }
 
-        public bool ContainKey(Vector2Int mapBlockIndex) => _mapBlocks.ContainsKey(mapBlockIndex);
+        public bool ContainKey(in Vector2Int mapBlockIndex) => _mapBlocks.ContainsKey(mapBlockIndex);
 
         private MapBlock CreateMapBlock(Vector2Int mapBlockIndex) => new(mapBlockIndex);
 

@@ -9,9 +9,9 @@ namespace SandBox.Map
 {
     public class MapBlock
     {
-        public MapBlock(Vector2Int blockIndex) => BlockIndex = blockIndex;
+        public MapBlock(in Vector2Int blockIndex) => BlockIndex = blockIndex;
 
-        public IElement this[Vector2Int localPosition]
+        public IElement this[in Vector2Int localPosition]
         {
             get => MapElements[localPosition.x + localPosition.y * MapSetting.Instance.MapLocalSizePerUnit];
             set
@@ -64,7 +64,7 @@ namespace SandBox.Map
                 int localIndex = i + j * mapLocalSizePerUnit;
                 IElement element = MapElements[localIndex];
                 MapBlock mapBlock = this;
-                bool isChange = ElementSimulation.Run(ref mapBlock, ref element);
+                bool isChange = ElementSimulation.Run(mapBlock, ref element);
                 if (isChange)
                 {
                     SetDirtyPoint(new Vector2Int(i, j));

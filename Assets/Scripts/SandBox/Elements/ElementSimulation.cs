@@ -9,22 +9,22 @@ namespace SandBox.Elements
 {
     public static class ElementSimulation
     {
-        public static bool Run(ref MapBlock mapBlock, ref IElement element)
+        public static bool Run(in MapBlock mapBlock, ref IElement element)
         {
             switch (element.Type)
             {
                 case ElementType.Solid:
-                    return SolidSimulation(ref mapBlock, ref element);
+                    return SolidSimulation(mapBlock, ref element);
                 case ElementType.Liquid:
-                    return LiquidSimulation(ref mapBlock, ref element);
+                    return LiquidSimulation(mapBlock, ref element);
                 case ElementType.Gas:
-                    return GasSimulation(ref mapBlock, ref element);
+                    return GasSimulation(mapBlock, ref element);
                 default:
                     return false;
             }
         }
 
-        public static bool SolidSimulation(ref MapBlock mapBlock, ref IElement element)
+        public static bool SolidSimulation(in MapBlock mapBlock, ref IElement element)
         {
             if (element.Step == SparseSandBoxMap.Instance.Step)
             {
@@ -85,7 +85,7 @@ namespace SandBox.Elements
             return false;
         }
 
-        public static bool LiquidSimulation(ref MapBlock mapBlock, ref IElement element)
+        public static bool LiquidSimulation(in MapBlock mapBlock, ref IElement element)
         {
             if (element.Step == SparseSandBoxMap.Instance.Step)
             {
@@ -176,6 +176,6 @@ namespace SandBox.Elements
             return false;
         }
 
-        public static bool GasSimulation(ref MapBlock mapBlock, ref IElement element) => false;
+        public static bool GasSimulation(in MapBlock mapBlock, ref IElement element) => false;
     }
 }

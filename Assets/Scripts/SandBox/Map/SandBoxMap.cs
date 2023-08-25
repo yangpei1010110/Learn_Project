@@ -7,7 +7,7 @@ namespace SandBox.Map
 {
     public class SandBoxMap
     {
-        public IElement this[Vector2 worldPosition]
+        public IElement this[in Vector2 worldPosition]
         {
             get => this[MapOffset.WorldToGlobal(
                             worldPosition,
@@ -18,7 +18,7 @@ namespace SandBox.Map
                             MapSetting.Instance.MapLocalSizePerUnit,
                             MapSetting.Instance.MapWorldSizePerUnit)] = value;
         }
-        public IElement this[Vector2Int globalPosition]
+        public IElement this[in Vector2Int globalPosition]
         {
             get => SparseSandBoxMap.Instance[globalPosition];
             set
@@ -29,7 +29,7 @@ namespace SandBox.Map
             }
         }
 
-        public bool Exist(Vector2Int globalPosition) => SparseSandBoxMap.Instance.ContainKey(MapOffset.GlobalToBlock(globalPosition, MapSetting.Instance.MapLocalSizePerUnit));
+        public bool Exist(in Vector2Int globalPosition) => SparseSandBoxMap.Instance.ContainKey(MapOffset.GlobalToBlock(globalPosition, MapSetting.Instance.MapLocalSizePerUnit));
 
         public void UpdateMap()
         {

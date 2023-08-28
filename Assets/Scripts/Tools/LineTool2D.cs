@@ -1,11 +1,62 @@
 #nullable enable
 using System;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Tools
 {
     public static class LineTool2D
     {
+        /// <summary>
+        ///     Bresenham 算法绘制线段
+        /// </summary>
+        public static void LineCast(in Vector2Int p0, in Vector2Int p1, in Action<Vector2Int> plot)
+        {
+            int x0 = p0.x;
+            int x1 = p1.x;
+            int y0 = p0.y;
+            int y1 = p1.y;
+            bool steep = math.abs(y1 - y0) > math.abs(x1 - x0);
+            if (steep)
+            {
+                x0 = p0.y;
+                x1 = p1.y;
+                y0 = p0.x;
+                y1 = p1.x;
+            }
+
+            if (x0 > x1)
+            {
+                (x0, x1) = (x1, x0);
+                (y0, y1) = (y1, y0);
+            }
+
+            int deltaX = x1 - x0;
+            int deltaY = math.abs(y1 - y0);
+            int error = deltaX / 2;
+            int yStep = y0 < y1 ? 1 : -1;
+            int y = y0;
+
+            for (int x = x0; x <= x1; x++)
+            {
+                if (steep)
+                {
+                    plot(new Vector2Int(y, x));
+                }
+                else
+                {
+                    plot(new Vector2Int(x, y));
+                }
+
+                error -= deltaY;
+                if (error < 0)
+                {
+                    y += yStep;
+                    error += deltaX;
+                }
+            }
+        }
+
         /// <summary>
         ///     2d 线段求交点
         /// </summary>

@@ -90,6 +90,7 @@ namespace SandBox
                 Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);
                 UpdateCircleSprite(mouseGlobalIndex);
+                UpdateLine(mouseGlobalIndex);
             }
         }
 
@@ -116,6 +117,15 @@ namespace SandBox
             CircleTool2D.DrawCircle(mouseGlobalIndex, mouseCircleRadius, pixel =>
             {
                 SparseSpriteMap.Instance.SafeSet(pixel, Color.white);
+                lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(pixel));
+            });
+        }
+
+        private void UpdateLine(in Vector2Int mouseGlobalIndex)
+        {
+            LineTool2D.LineCast(Vector2Int.zero, mouseGlobalIndex, pixel =>
+            {
+                SparseSpriteMap.Instance.SafeSet(pixel, Color.red);
                 lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(pixel));
             });
         }

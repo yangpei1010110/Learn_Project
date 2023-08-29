@@ -12,17 +12,12 @@ namespace SandBox.Map
             _mapElements = new T[MapSetting.MapLocalSizePerUnit * MapSetting.MapLocalSizePerUnit];
         }
 
-        public T this[in Vector2Int globalIndex]
+        public ref T this[in Vector2Int globalIndex]
         {
             get
             {
                 Vector2Int localIndex = MapOffset.GlobalToLocal(globalIndex);
-                return _mapElements[localIndex.x + localIndex.y * MapSetting.MapLocalSizePerUnit];
-            }
-            set
-            {
-                Vector2Int localIndex = MapOffset.GlobalToLocal(globalIndex);
-                _mapElements[localIndex.x + localIndex.y * MapSetting.MapLocalSizePerUnit] = value;
+                return ref _mapElements[localIndex.x + localIndex.y * MapSetting.MapLocalSizePerUnit];
             }
         }
 

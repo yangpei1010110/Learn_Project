@@ -127,6 +127,7 @@ namespace SandBox
             {
                 SparseSpriteMap.Instance.SafeSet(pixel, Color.red);
                 lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(pixel));
+                return true;
             });
         }
 

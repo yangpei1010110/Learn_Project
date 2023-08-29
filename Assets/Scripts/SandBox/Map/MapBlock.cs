@@ -33,15 +33,9 @@ namespace SandBox.Map
             Vector2Int dirtyMax = new(
                 Mathf.Clamp(localDirtyPoint.x + mapDirtyOutRange, 0, mapLocalSizePerUnit - 1),
                 Mathf.Clamp(localDirtyPoint.y + mapDirtyOutRange, 0, mapLocalSizePerUnit - 1));
-            // SetDirtyPoint(dirtyX);
-            // SetDirtyPoint(dirtyY);
 
             _dirtyRectMinX = Mathf.Min(_dirtyRectMinX, dirtyMin.x);
             _dirtyRectMinY = Mathf.Min(_dirtyRectMinY, dirtyMin.y);
-            // _dirtyRectMaxX = Mathf.Max(_dirtyRectMaxX, dirtyMin.x);
-            // _dirtyRectMaxY = Mathf.Max(_dirtyRectMaxY, dirtyMin.y);
-            // _dirtyRectMinX = Mathf.Min(_dirtyRectMinX, dirtyMax.x);
-            // _dirtyRectMinY = Mathf.Min(_dirtyRectMinY, dirtyMax.y);
             _dirtyRectMaxX = Mathf.Max(_dirtyRectMaxX, dirtyMax.x);
             _dirtyRectMaxY = Mathf.Max(_dirtyRectMaxY, dirtyMax.y);
         }
@@ -54,10 +48,6 @@ namespace SandBox.Map
             int xMax = _dirtyRectMaxX;
             int yMin = _dirtyRectMinY;
             int yMax = _dirtyRectMaxY;
-            // int xMin = _dirtyRectMinX - mapDirtyOutRange < 0 ? 0 : _dirtyRectMinX - mapDirtyOutRange;
-            // int xMax = _dirtyRectMaxX + mapDirtyOutRange >= mapLocalSizePerUnit ? mapLocalSizePerUnit - 1 : _dirtyRectMaxX + mapDirtyOutRange;
-            // int yMin = _dirtyRectMinY - mapDirtyOutRange < 0 ? 0 : _dirtyRectMinY - mapDirtyOutRange;
-            // int yMax = _dirtyRectMaxY + mapDirtyOutRange >= mapLocalSizePerUnit ? mapLocalSizePerUnit - 1 : _dirtyRectMaxY + mapDirtyOutRange;
             ClearDirtyRect();
             for (int j = yMin; j <= yMax; j++)
             for (int i = xMin; i <= xMax; i++)
@@ -65,14 +55,10 @@ namespace SandBox.Map
                 int localIndex = i + j * mapLocalSizePerUnit;
                 IElement element = MapElements[localIndex];
                 MapBlock mapBlock = this;
-                bool isChange = ElementSimulation.Run(mapBlock, ref element);
-                if (isChange)
+                // bool isChange = ElementSimulation.Run(mapBlock, ref element);
+                // if (isChange)
                 {
-                    SetDirtyPoint(new Vector2Int(i, j));
-                    // var dirtyX = new Vector2Int(Mathf.Clamp(i - mapDirtyOutRange, 0, mapLocalSizePerUnit - 1), Mathf.Clamp(j - mapDirtyOutRange, 0, mapLocalSizePerUnit - 1));
-                    // var dirtyY = new Vector2Int(Mathf.Clamp(i + mapDirtyOutRange, 0, mapLocalSizePerUnit - 1), Mathf.Clamp(j + mapDirtyOutRange, 0, mapLocalSizePerUnit - 1));
-                    // SetDirtyPoint(dirtyX);
-                    // SetDirtyPoint(dirtyY);
+                    // SetDirtyPoint(new Vector2Int(i, j));
                 }
             }
         }

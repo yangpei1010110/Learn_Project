@@ -7,21 +7,13 @@ namespace SandBox.Map.SandBox
 {
     public class SparseSandBoxMap2<T>
     {
-        public T this[in Vector2Int globalIndex]
-        {
-            get
-            {
-                Vector2Int mapBlockIndex = MapOffset.GlobalToBlock(globalIndex);
-                MapBlock2<T> map = _mapBlocks.GetOrNew(mapBlockIndex, CreateMapBlock, globalIndex);
-                return map[globalIndex];
-            }
-            set
-            {
-                Vector2Int mapBlockIndex = MapOffset.GlobalToBlock(globalIndex);
-                MapBlock2<T> map = _mapBlocks.GetOrNew(mapBlockIndex, CreateMapBlock, globalIndex);
-                map[globalIndex] = value;
-            }
-        }
+        public bool Exist(in Vector2Int globalPosition) => ContainKey(MapOffset.GlobalToBlock(globalPosition));
+
+        public bool ContainKey(in Vector2Int mapBlockIndex) => _mapBlocks.ContainsKey(mapBlockIndex);
+
+        public ref T this[in Vector2Int globalIndex] => ref _mapBlocks.GetOrNew(MapOffset.GlobalToBlock(globalIndex), CreateMapBlock, globalIndex)[globalIndex];
+
+        public void SetDirty(in Vector2Int globalIndex) => _mapBlocks[MapOffset.GlobalToBlock(globalIndex)].SetDirtyPoint(MapOffset.GlobalToLocal(globalIndex));
 
         private MapBlock2<T> CreateMapBlock(Vector2Int globalIndex)
         {

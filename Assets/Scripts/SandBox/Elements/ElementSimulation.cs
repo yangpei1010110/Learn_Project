@@ -4,6 +4,7 @@ using System;
 using SandBox.Elements.Interface;
 using SandBox.Map;
 using SandBox.Map.SandBox;
+using SandBox.Physics;
 using Tools;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -13,14 +14,43 @@ namespace SandBox.Elements
     // TODO 将粒子更新修改为不需要储存变量地址的方式
     public static class ElementSimulation
     {
-        private static void UpdateVelocity(in MapBlock mapBlock, in Vector2Int localIndex, in int deltaTime)
+        private static void UpdateVelocity(in Vector2Int globalIndex, in int deltaTime)
         {
-            mapBlock[localIndex].Velocity += MapSetting.GravityForce * deltaTime;
+            SparseSandBoxMap2<IElement>.Instance[globalIndex].Velocity += MapSetting.GravityForce * deltaTime;
         }
 
-        private static Vector2Int? DetectCollision(in MapBlock mapBlock, in Vector2Int localIndex, in int deltaTime) => throw new NotImplementedException();
+        private static Vector2Int? DetectCollision(Vector2Int globalIndex, in int deltaTime)
+        {
+            var element = SparseSandBoxMap2<IElement>.Instance[globalIndex];
+            Vector2 nextWorldPosition = globalIndex + element.PositionOffset + element.Velocity * deltaTime;
+            Vector2Int nextGlobalIndex = MapOffset.WorldToGlobal(nextWorldPosition);
+            Vector2 offset = nextWorldPosition - nextGlobalIndex;
+            element.PositionOffset = offset;
 
-        private static void UpdatePosition(in MapBlock mapBlock, in Vector2Int localIndex, in int deltaTime)
+            Vector2Int? elementGlobalIndex = globalIndex;
+            LineTool2D.LineCast(globalIndex, nextGlobalIndex, tempGlobalIndex =>
+            {
+                var existElement = SparseSandBoxMap2<IElement>.Instance.Exist(tempGlobalIndex);
+                if (!existElement)
+                {
+                    // collision edge
+                    ElementPhysics.DetectCollision(elementGlobalIndex.Value, tempGlobalIndex);
+                    return false;
+                }
+
+                var tempElement = SparseSandBoxMap2<IElement>.Instance[tempGlobalIndex];
+                if (tempElement.Type != ElementType.Void)
+                {
+                    ElementPhysics.DetectCollision(elementGlobalIndex.Value, tempGlobalIndex);
+                    return false;
+                }
+
+                elementGlobalIndex = tempGlobalIndex;
+                return true;
+            });
+        }
+
+        private static void GetNextPosition(in MapBlock2<IElement> mapBlock, in Vector2Int localIndex, in int deltaTime)
         {
             IElement element = mapBlock[localIndex];
             Vector2 velocity = element.Velocity;
@@ -31,7 +61,7 @@ namespace SandBox.Elements
             element.PositionOffset = offset;
         }
 
-        public static bool Run(in MapBlock mapBlock, ref IElement element)
+        public static bool Run(in MapBlock2<IElement> mapBlock, ref IElement element)
         {
             switch (element.Type)
             {
@@ -46,7 +76,14 @@ namespace SandBox.Elements
             }
         }
 
-        public static bool SolidSimulation(in MapBlock mapBlock, ref IElement element)
+        public static bool SolidSimulation2(in Vector2Int globalIndex, in int deltaTime)
+        {
+            var element = SparseSandBoxMap2<IElement>.Instance[globalIndex];
+            var blockIndex = MapOffset.GlobalToBlock(globalIndex);
+            var localIndex = MapOffset.GlobalToLocal(globalIndex);
+        }
+
+        public static bool SolidSimulation(in MapBlock2<IElement> mapBlock, ref IElement element)
         {
             if (element.Step == SparseSandBoxMap.Instance.Step)
             {
@@ -107,7 +144,7 @@ namespace SandBox.Elements
             return false;
         }
 
-        public static bool LiquidSimulation(in MapBlock mapBlock, ref IElement element)
+        public static bool LiquidSimulation(in MapBlock2<IElement> mapBlock, ref IElement element)
         {
             if (element.Step == SparseSandBoxMap.Instance.Step)
             {
@@ -198,6 +235,6 @@ namespace SandBox.Elements
             return false;
         }
 
-        public static bool GasSimulation(in MapBlock mapBlock, ref IElement element) => false;
+        public static bool GasSimulation(in MapBlock2<IElement> mapBlock, ref IElement element) => false;
     }
 }

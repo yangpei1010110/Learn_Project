@@ -10,7 +10,7 @@ namespace Tools
         /// <summary>
         ///     Bresenham 算法绘制线段
         /// </summary>
-        public static void LineCast(in Vector2Int p0, in Vector2Int p1, in Action<Vector2Int> plot)
+        public static void LineCast(in Vector2Int p0, in Vector2Int p1, in Func<Vector2Int, bool> plot)
         {
             int x0 = p0.x;
             int x1 = p1.x;
@@ -41,11 +41,17 @@ namespace Tools
             {
                 if (steep)
                 {
-                    plot(new Vector2Int(y, x));
+                    if (!plot(new Vector2Int(y, x)))
+                    {
+                        return;
+                    }
                 }
                 else
                 {
-                    plot(new Vector2Int(x, y));
+                    if (!plot(new Vector2Int(x, y)))
+                    {
+                        return;
+                    }
                 }
 
                 error -= deltaY;

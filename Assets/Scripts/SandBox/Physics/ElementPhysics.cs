@@ -9,6 +9,24 @@ namespace SandBox.Physics
 {
     public static class ElementPhysics
     {
+        private struct CollisionRegularData
+        {
+            public Vector2Int ElementGlobalIndex;
+            public Vector2Int ElementLeftGlobalIndex;
+            public Vector2Int ElementRightGlobalIndex;
+            public Vector2Int BlockGlobalIndex;
+            public Vector2Int BlockLeftGlobalIndex;
+            public Vector2Int BlockRightGlobalIndex;
+        }
+
+        private struct CollisionDiagonalData
+        {
+            public Vector2Int ElementGlobalIndex;
+            public Vector2Int LeftGlobalIndex;
+            public Vector2Int RightGlobalIndex;
+            public Vector2Int BlockGlobalIndex;
+        }
+
         public struct CollisionInfo
         {
             public bool          IsCollision;
@@ -24,296 +42,614 @@ namespace SandBox.Physics
             Block,
         }
 
-        private static CollisionInfo SimpleElementCollision(in Vector2Int elementGlobalIndex, in Vector2Int blockGlobalIndex)
+
+        /// <summary>
+        /// 碰撞处在 y 平面或 x 平面
+        /// </summary>
+        private static CollisionInfo SimpleRegularCollision(in CollisionRegularData collisionData)
         {
-            CollisionInfo result = default(CollisionInfo);
-            if (elementGlobalIndex == blockGlobalIndex)
+            var existElement = SparseSandBoxMap2<IElement>.Instance.Exist(collisionData.ElementGlobalIndex);
+            if (!existElement)
             {
                 return default(CollisionInfo);
             }
 
-            Vector2Int normal = blockGlobalIndex - elementGlobalIndex;
-            if (math.abs(normal.x) != 1 || math.abs(normal.y) != 1)
+            var existBlock = SparseSandBoxMap2<IElement>.Instance.Exist(collisionData.BlockGlobalIndex);
+            if (existBlock)
             {
-                // elements not near
-                return default(CollisionInfo);
-            }
+                // test swap
+                var element = SparseSandBoxMap2<IElement>.Instance[collisionData.ElementGlobalIndex];
+                var block = SparseSandBoxMap2<IElement>.Instance[collisionData.BlockGlobalIndex];
 
-            bool isCanCollision = SparseSandBoxMap2<IElement>.Instance.Exist(elementGlobalIndex)
-                               && SparseSandBoxMap2<IElement>.Instance.Exist(blockGlobalIndex);
-
-            if (!isCanCollision)
-            {
-                return default(CollisionInfo);
-            }
-            else
-            {
-                // can block
-                result.IsCollision = true;
-                result.Type = CollisionType.Block;
-            }
-
-            var element = SparseSandBoxMap2<IElement>.Instance[elementGlobalIndex];
-            var block = SparseSandBoxMap2<IElement>.Instance[blockGlobalIndex];
-
-            // swap test
-            if (element.Density < block.Density)
-            {
-                result.Type = CollisionType.Swap;
-                result.NextGlobalIndex = blockGlobalIndex;
-                return result;
-            }
-
-            // slip test
-            if (math.abs(normal.x) + math.abs(normal.y) == 2)
-            {
-                // is diagonal
-                // test x move
-                var xMoveGlobalIndex = elementGlobalIndex + new Vector2Int(normal.x, 0);
-                if (SparseSandBoxMap2<IElement>.Instance.Exist(xMoveGlobalIndex))
+                if (element.Type == ElementType.Void)
                 {
-                    var xMoveElement = SparseSandBoxMap2<IElement>.Instance[xMoveGlobalIndex];
-                    if (xMoveElement.Density <= element.Density)
+                    return default(CollisionInfo);
+                }
+
+                if (block.Density < element.Density)
+                {
+                    return new CollisionInfo()
                     {
-                        result.Type = CollisionType.Slip;
-                        result.NextGlobalIndex = xMoveGlobalIndex;
-                        return result;
+                        IsCollision = true,
+                        Type = CollisionType.Swap,
+                        NextGlobalIndex = collisionData.BlockGlobalIndex,
+                    };
+                }
+
+
+                // test block left or right
+                var existBlockLeft = SparseSandBoxMap2<IElement>.Instance.Exist(collisionData.BlockLeftGlobalIndex);
+                var existBlockRight = SparseSandBoxMap2<IElement>.Instance.Exist(collisionData.BlockRightGlobalIndex);
+                bool isBlockLeft = Random.Range(0, 2) == 0;
+                if (isBlockLeft)
+                {
+                    if (existBlockLeft)
+                    {
+                        // test swap
+                        var left = SparseSandBoxMap2<IElement>.Instance[collisionData.BlockLeftGlobalIndex];
+                        if (left.Density < element.Density)
+                        {
+                            return new CollisionInfo()
+                            {
+                                IsCollision = true,
+                                Type = CollisionType.Swap,
+                                NextGlobalIndex = collisionData.BlockLeftGlobalIndex,
+                            };
+                        }
+                    }
+
+                    if (existBlockRight)
+                    {
+                        var right = SparseSandBoxMap2<IElement>.Instance[collisionData.BlockRightGlobalIndex];
+                        if (right.Density < element.Density)
+                        {
+                            return new CollisionInfo()
+                            {
+                                IsCollision = true,
+                                Type = CollisionType.Swap,
+                                NextGlobalIndex = collisionData.BlockRightGlobalIndex,
+                            };
+                        }
+                    }
+                }
+                else
+                {
+                    if (existBlockRight)
+                    {
+                        var right = SparseSandBoxMap2<IElement>.Instance[collisionData.BlockRightGlobalIndex];
+                        if (right.Density < element.Density)
+                        {
+                            return new CollisionInfo()
+                            {
+                                IsCollision = true,
+                                Type = CollisionType.Swap,
+                                NextGlobalIndex = collisionData.BlockRightGlobalIndex,
+                            };
+                        }
+                    }
+
+                    if (existBlockLeft)
+                    {
+                        // test swap
+                        var left = SparseSandBoxMap2<IElement>.Instance[collisionData.BlockLeftGlobalIndex];
+                        if (left.Density < element.Density)
+                        {
+                            return new CollisionInfo()
+                            {
+                                IsCollision = true,
+                                Type = CollisionType.Swap,
+                                NextGlobalIndex = collisionData.BlockLeftGlobalIndex,
+                            };
+                        }
                     }
                 }
 
-                // test y move
-                var yMoveGlobalIndex = elementGlobalIndex + new Vector2Int(0, normal.y);
-                if (SparseSandBoxMap2<IElement>.Instance.Exist(yMoveGlobalIndex))
+                // test element left or right
+                var existElementLeft = SparseSandBoxMap2<IElement>.Instance.Exist(collisionData.ElementLeftGlobalIndex);
+                var existElementRight = SparseSandBoxMap2<IElement>.Instance.Exist(collisionData.ElementRightGlobalIndex);
+                bool isElementLeft = Random.Range(0, 2) == 0;
+                if (isElementLeft)
                 {
-                    var yMoveElement = SparseSandBoxMap2<IElement>.Instance[yMoveGlobalIndex];
-                    if (yMoveElement.Density <= element.Density)
+                    if (existElementLeft)
                     {
-                        result.Type = CollisionType.Slip;
-                        result.NextGlobalIndex = yMoveGlobalIndex;
-                        return result;
+                        // test swap
+                        var left = SparseSandBoxMap2<IElement>.Instance[collisionData.ElementLeftGlobalIndex];
+                        if (left.Density < element.Density)
+                        {
+                            return new CollisionInfo()
+                            {
+                                IsCollision = true,
+                                Type = CollisionType.Swap,
+                                NextGlobalIndex = collisionData.ElementLeftGlobalIndex,
+                            };
+                        }
                     }
-                }
-            }
-            else if (math.abs(normal.x) == 1)
-            {
-                // test y move
-                bool isPositive = Random.Range(0, 2) == 0;
-                var offset = isPositive ? new Vector2Int(normal.x, 1) : new Vector2Int(normal.x, -1);
-                var yMoveGlobalIndex = elementGlobalIndex + offset;
-                if (SparseSandBoxMap2<IElement>.Instance.Exist(yMoveGlobalIndex))
-                {
-                    var yMoveElement = SparseSandBoxMap2<IElement>.Instance[yMoveGlobalIndex];
-                    if (yMoveElement.Density <= element.Density)
-                    {
-                        result.Type = CollisionType.Slip;
-                        result.NextGlobalIndex = yMoveGlobalIndex;
-                        return result;
-                    }
-                }
 
-                offset = !isPositive ? new Vector2Int(normal.x, 1) : new Vector2Int(normal.x, -1);
-                yMoveGlobalIndex = elementGlobalIndex + offset;
-                if (SparseSandBoxMap2<IElement>.Instance.Exist(yMoveGlobalIndex))
-                {
-                    var yMoveElement = SparseSandBoxMap2<IElement>.Instance[yMoveGlobalIndex];
-                    if (yMoveElement.Density <= element.Density)
+                    if (existElementRight)
                     {
-                        result.Type = CollisionType.Slip;
-                        result.NextGlobalIndex = yMoveGlobalIndex;
-                        return result;
+                        var right = SparseSandBoxMap2<IElement>.Instance[collisionData.ElementRightGlobalIndex];
+                        if (right.Density < element.Density)
+                        {
+                            return new CollisionInfo()
+                            {
+                                IsCollision = true,
+                                Type = CollisionType.Swap,
+                                NextGlobalIndex = collisionData.ElementRightGlobalIndex,
+                            };
+                        }
                     }
                 }
-            }
-            else if (math.abs(normal.y) == 1)
-            {
-                // test x move
-                bool isPositive = Random.Range(0, 2) == 0;
-                var offset = isPositive ? new Vector2Int(1, normal.y) : new Vector2Int(-1, normal.y);
-                var xMoveGlobalIndex = elementGlobalIndex + offset;
-                if (SparseSandBoxMap2<IElement>.Instance.Exist(xMoveGlobalIndex))
+                else
                 {
-                    var xMoveElement = SparseSandBoxMap2<IElement>.Instance[xMoveGlobalIndex];
-                    if (xMoveElement.Density <= element.Density)
+                    if (existElementRight)
                     {
-                        result.Type = CollisionType.Slip;
-                        result.NextGlobalIndex = xMoveGlobalIndex;
-                        return result;
+                        var right = SparseSandBoxMap2<IElement>.Instance[collisionData.ElementRightGlobalIndex];
+                        if (right.Density < element.Density)
+                        {
+                            return new CollisionInfo()
+                            {
+                                IsCollision = true,
+                                Type = CollisionType.Swap,
+                                NextGlobalIndex = collisionData.ElementRightGlobalIndex,
+                            };
+                        }
                     }
-                }
 
-                offset = !isPositive ? new Vector2Int(1, normal.y) : new Vector2Int(-1, normal.y);
-                xMoveGlobalIndex = elementGlobalIndex + offset;
-                if (SparseSandBoxMap2<IElement>.Instance.Exist(xMoveGlobalIndex))
-                {
-                    var xMoveElement = SparseSandBoxMap2<IElement>.Instance[xMoveGlobalIndex];
-                    if (xMoveElement.Density <= element.Density)
+                    if (existElementLeft)
                     {
-                        result.Type = CollisionType.Slip;
-                        result.NextGlobalIndex = xMoveGlobalIndex;
-                        return result;
+                        // test swap
+                        var left = SparseSandBoxMap2<IElement>.Instance[collisionData.ElementLeftGlobalIndex];
+                        if (left.Density < element.Density)
+                        {
+                            return new CollisionInfo()
+                            {
+                                IsCollision = true,
+                                Type = CollisionType.Swap,
+                                NextGlobalIndex = collisionData.ElementLeftGlobalIndex,
+                            };
+                        }
                     }
                 }
             }
+
+            return default(CollisionInfo);
         }
 
         /// <summary>
-        ///  元素与边缘发生碰撞
+        /// 碰撞处在对角线
         /// </summary>
-        private static CollisionInfo SimpleWallCollision(in Vector2Int elementGlobalIndex, in Vector2Int blockGlobalIndex)
+        private static CollisionInfo SimpleDiagonalCollision(in CollisionDiagonalData collisionData)
         {
-            CollisionInfo result = default(CollisionInfo);
-            if (elementGlobalIndex == blockGlobalIndex)
+            var existElement = SparseSandBoxMap2<IElement>.Instance.Exist(collisionData.ElementGlobalIndex);
+            if (!existElement)
             {
                 return default(CollisionInfo);
             }
 
-            Vector2Int normal = blockGlobalIndex - elementGlobalIndex;
-            if (math.abs(normal.x) != 1 || math.abs(normal.y) != 1)
+            var existBlock = SparseSandBoxMap2<IElement>.Instance.Exist(collisionData.BlockGlobalIndex);
+            if (existBlock)
             {
-                // elements not near
-                return default(CollisionInfo);
-            }
+                // test swap
+                var element = SparseSandBoxMap2<IElement>.Instance[collisionData.ElementGlobalIndex];
+                var block = SparseSandBoxMap2<IElement>.Instance[collisionData.BlockGlobalIndex];
 
-            bool isCanCollision = SparseSandBoxMap2<IElement>.Instance.Exist(elementGlobalIndex)
-                               && !SparseSandBoxMap2<IElement>.Instance.Exist(blockGlobalIndex);
-
-            if (!isCanCollision)
-            {
-                return default(CollisionInfo);
-            }
-            else
-            {
-                // can block
-                result.IsCollision = true;
-                result.Type = CollisionType.Block;
-            }
-
-            var element = SparseSandBoxMap2<IElement>.Instance[elementGlobalIndex];
-            if (math.abs(normal.x) + math.abs(normal.y) == 2)
-            {
-                // is diagonal
-                // test x move
-                var xMoveGlobalIndex = elementGlobalIndex + new Vector2Int(normal.x, 0);
-                if (SparseSandBoxMap2<IElement>.Instance.Exist(xMoveGlobalIndex))
+                if (element.Type == ElementType.Void)
                 {
-                    var xMoveElement = SparseSandBoxMap2<IElement>.Instance[xMoveGlobalIndex];
-                    if (xMoveElement.Density <= element.Density)
-                    {
-                        result.Type = CollisionType.Slip;
-                        result.NextGlobalIndex = xMoveGlobalIndex;
-                        return result;
-                    }
+                    return default(CollisionInfo);
                 }
 
-                // test y move
-                var yMoveGlobalIndex = elementGlobalIndex + new Vector2Int(0, normal.y);
-                if (SparseSandBoxMap2<IElement>.Instance.Exist(yMoveGlobalIndex))
+                if (block.Density < element.Density)
                 {
-                    var yMoveElement = SparseSandBoxMap2<IElement>.Instance[yMoveGlobalIndex];
-                    if (yMoveElement.Density <= element.Density)
+                    return new CollisionInfo()
                     {
-                        result.Type = CollisionType.Slip;
-                        result.NextGlobalIndex = yMoveGlobalIndex;
-                        return result;
-                    }
-                }
-            }
-            else if (math.abs(normal.x) == 1)
-            {
-                // test y move
-                bool isPositive = Random.Range(0, 2) == 0;
-                var offset = isPositive ? new Vector2Int(normal.x, 1) : new Vector2Int(normal.x, -1);
-                var yMoveGlobalIndex = elementGlobalIndex + offset;
-                if (SparseSandBoxMap2<IElement>.Instance.Exist(yMoveGlobalIndex))
-                {
-                    var yMoveElement = SparseSandBoxMap2<IElement>.Instance[yMoveGlobalIndex];
-                    if (yMoveElement.Density <= element.Density)
-                    {
-                        result.Type = CollisionType.Slip;
-                        result.NextGlobalIndex = yMoveGlobalIndex;
-                        return result;
-                    }
+                        IsCollision = true,
+                        Type = CollisionType.Swap,
+                        NextGlobalIndex = collisionData.BlockGlobalIndex,
+                    };
                 }
 
-                offset = !isPositive ? new Vector2Int(normal.x, 1) : new Vector2Int(normal.x, -1);
-                yMoveGlobalIndex = elementGlobalIndex + offset;
-                if (SparseSandBoxMap2<IElement>.Instance.Exist(yMoveGlobalIndex))
+                // test left or right
+                var existLeft = SparseSandBoxMap2<IElement>.Instance.Exist(collisionData.LeftGlobalIndex);
+                var existRight = SparseSandBoxMap2<IElement>.Instance.Exist(collisionData.RightGlobalIndex);
+                bool isLeft = Random.Range(0, 2) == 0;
+                if (isLeft)
                 {
-                    var yMoveElement = SparseSandBoxMap2<IElement>.Instance[yMoveGlobalIndex];
-                    if (yMoveElement.Density <= element.Density)
+                    if (existLeft)
                     {
-                        result.Type = CollisionType.Slip;
-                        result.NextGlobalIndex = yMoveGlobalIndex;
-                        return result;
+                        // test swap
+                        var left = SparseSandBoxMap2<IElement>.Instance[collisionData.LeftGlobalIndex];
+                        if (left.Density < element.Density)
+                        {
+                            return new CollisionInfo()
+                            {
+                                IsCollision = true,
+                                Type = CollisionType.Swap,
+                                NextGlobalIndex = collisionData.LeftGlobalIndex,
+                            };
+                        }
                     }
-                }
-            }
-            else if (math.abs(normal.y) == 1)
-            {
-                // test x move
-                bool isPositive = Random.Range(0, 2) == 0;
-                var offset = isPositive ? new Vector2Int(1, normal.y) : new Vector2Int(-1, normal.y);
-                var xMoveGlobalIndex = elementGlobalIndex + offset;
-                if (SparseSandBoxMap2<IElement>.Instance.Exist(xMoveGlobalIndex))
-                {
-                    var xMoveElement = SparseSandBoxMap2<IElement>.Instance[xMoveGlobalIndex];
-                    if (xMoveElement.Density <= element.Density)
-                    {
-                        result.Type = CollisionType.Slip;
-                        result.NextGlobalIndex = xMoveGlobalIndex;
-                        return result;
-                    }
-                }
 
-                offset = !isPositive ? new Vector2Int(1, normal.y) : new Vector2Int(-1, normal.y);
-                xMoveGlobalIndex = elementGlobalIndex + offset;
-                if (SparseSandBoxMap2<IElement>.Instance.Exist(xMoveGlobalIndex))
-                {
-                    var xMoveElement = SparseSandBoxMap2<IElement>.Instance[xMoveGlobalIndex];
-                    if (xMoveElement.Density <= element.Density)
+                    if (existRight)
                     {
-                        result.Type = CollisionType.Slip;
-                        result.NextGlobalIndex = xMoveGlobalIndex;
-                        return result;
+                        var right = SparseSandBoxMap2<IElement>.Instance[collisionData.RightGlobalIndex];
+                        if (right.Density < element.Density)
+                        {
+                            return new CollisionInfo()
+                            {
+                                IsCollision = true,
+                                Type = CollisionType.Swap,
+                                NextGlobalIndex = collisionData.RightGlobalIndex,
+                            };
+                        }
+                    }
+                }
+                else
+                {
+                    if (existRight)
+                    {
+                        var right = SparseSandBoxMap2<IElement>.Instance[collisionData.RightGlobalIndex];
+                        if (right.Density < element.Density)
+                        {
+                            return new CollisionInfo()
+                            {
+                                IsCollision = true,
+                                Type = CollisionType.Swap,
+                                NextGlobalIndex = collisionData.RightGlobalIndex,
+                            };
+                        }
+                    }
+
+                    if (existLeft)
+                    {
+                        // test swap
+                        var left = SparseSandBoxMap2<IElement>.Instance[collisionData.LeftGlobalIndex];
+                        if (left.Density < element.Density)
+                        {
+                            return new CollisionInfo()
+                            {
+                                IsCollision = true,
+                                Type = CollisionType.Swap,
+                                NextGlobalIndex = collisionData.LeftGlobalIndex,
+                            };
+                        }
                     }
                 }
             }
 
-            throw new Exception("impossible collision");
+            return default(CollisionInfo);
         }
+
+        // private static CollisionInfo SimpleElementCollision(in Vector2Int elementGlobalIndex, in Vector2Int blockGlobalIndex)
+        // {
+        //     CollisionInfo result = default(CollisionInfo);
+        //     if (elementGlobalIndex == blockGlobalIndex)
+        //     {
+        //         return default(CollisionInfo);
+        //     }
+        //
+        //     Vector2Int normal = blockGlobalIndex - elementGlobalIndex;
+        //     if (math.abs(normal.x) != 1 || math.abs(normal.y) != 1)
+        //     {
+        //         // elements not near
+        //         return default(CollisionInfo);
+        //     }
+        //
+        //     bool isCanCollision = SparseSandBoxMap2<IElement>.Instance.Exist(elementGlobalIndex)
+        //                        && SparseSandBoxMap2<IElement>.Instance.Exist(blockGlobalIndex);
+        //
+        //     if (!isCanCollision)
+        //     {
+        //         return default(CollisionInfo);
+        //     }
+        //     else
+        //     {
+        //         // can block
+        //         result.IsCollision = true;
+        //         result.Type = CollisionType.Block;
+        //     }
+        //
+        //     var element = SparseSandBoxMap2<IElement>.Instance[elementGlobalIndex];
+        //     var block = SparseSandBoxMap2<IElement>.Instance[blockGlobalIndex];
+        //
+        //     // swap test
+        //     if (element.Density < block.Density)
+        //     {
+        //         result.Type = CollisionType.Swap;
+        //         result.NextGlobalIndex = blockGlobalIndex;
+        //         return result;
+        //     }
+        //
+        //     // slip test
+        //     if (math.abs(normal.x) + math.abs(normal.y) == 2)
+        //     {
+        //         // is diagonal
+        //         // test x move
+        //         var xMoveGlobalIndex = elementGlobalIndex + new Vector2Int(normal.x, 0);
+        //         if (SparseSandBoxMap2<IElement>.Instance.Exist(xMoveGlobalIndex))
+        //         {
+        //             var xMoveElement = SparseSandBoxMap2<IElement>.Instance[xMoveGlobalIndex];
+        //             if (xMoveElement.Density <= element.Density)
+        //             {
+        //                 result.Type = CollisionType.Slip;
+        //                 result.NextGlobalIndex = xMoveGlobalIndex;
+        //                 return result;
+        //             }
+        //         }
+        //
+        //         // test y move
+        //         var yMoveGlobalIndex = elementGlobalIndex + new Vector2Int(0, normal.y);
+        //         if (SparseSandBoxMap2<IElement>.Instance.Exist(yMoveGlobalIndex))
+        //         {
+        //             var yMoveElement = SparseSandBoxMap2<IElement>.Instance[yMoveGlobalIndex];
+        //             if (yMoveElement.Density <= element.Density)
+        //             {
+        //                 result.Type = CollisionType.Slip;
+        //                 result.NextGlobalIndex = yMoveGlobalIndex;
+        //                 return result;
+        //             }
+        //         }
+        //     }
+        //     else if (math.abs(normal.x) == 1)
+        //     {
+        //         // test y move
+        //         bool isPositive = Random.Range(0, 2) == 0;
+        //         var offset = isPositive ? new Vector2Int(normal.x, 1) : new Vector2Int(normal.x, -1);
+        //         var yMoveGlobalIndex = elementGlobalIndex + offset;
+        //         if (SparseSandBoxMap2<IElement>.Instance.Exist(yMoveGlobalIndex))
+        //         {
+        //             var yMoveElement = SparseSandBoxMap2<IElement>.Instance[yMoveGlobalIndex];
+        //             if (yMoveElement.Density <= element.Density)
+        //             {
+        //                 result.Type = CollisionType.Slip;
+        //                 result.NextGlobalIndex = yMoveGlobalIndex;
+        //                 return result;
+        //             }
+        //         }
+        //
+        //         offset = !isPositive ? new Vector2Int(normal.x, 1) : new Vector2Int(normal.x, -1);
+        //         yMoveGlobalIndex = elementGlobalIndex + offset;
+        //         if (SparseSandBoxMap2<IElement>.Instance.Exist(yMoveGlobalIndex))
+        //         {
+        //             var yMoveElement = SparseSandBoxMap2<IElement>.Instance[yMoveGlobalIndex];
+        //             if (yMoveElement.Density <= element.Density)
+        //             {
+        //                 result.Type = CollisionType.Slip;
+        //                 result.NextGlobalIndex = yMoveGlobalIndex;
+        //                 return result;
+        //             }
+        //         }
+        //     }
+        //     else if (math.abs(normal.y) == 1)
+        //     {
+        //         // test x move
+        //         bool isPositive = Random.Range(0, 2) == 0;
+        //         var offset = isPositive ? new Vector2Int(1, normal.y) : new Vector2Int(-1, normal.y);
+        //         var xMoveGlobalIndex = elementGlobalIndex + offset;
+        //         if (SparseSandBoxMap2<IElement>.Instance.Exist(xMoveGlobalIndex))
+        //         {
+        //             var xMoveElement = SparseSandBoxMap2<IElement>.Instance[xMoveGlobalIndex];
+        //             if (xMoveElement.Density <= element.Density)
+        //             {
+        //                 result.Type = CollisionType.Slip;
+        //                 result.NextGlobalIndex = xMoveGlobalIndex;
+        //                 return result;
+        //             }
+        //         }
+        //
+        //         offset = !isPositive ? new Vector2Int(1, normal.y) : new Vector2Int(-1, normal.y);
+        //         xMoveGlobalIndex = elementGlobalIndex + offset;
+        //         if (SparseSandBoxMap2<IElement>.Instance.Exist(xMoveGlobalIndex))
+        //         {
+        //             var xMoveElement = SparseSandBoxMap2<IElement>.Instance[xMoveGlobalIndex];
+        //             if (xMoveElement.Density <= element.Density)
+        //             {
+        //                 result.Type = CollisionType.Slip;
+        //                 result.NextGlobalIndex = xMoveGlobalIndex;
+        //                 return result;
+        //             }
+        //         }
+        //     }
+        // }
+
+        // /// <summary>
+        // ///  元素与边缘发生碰撞
+        // /// </summary>
+        // private static CollisionInfo SimpleWallCollision(in Vector2Int elementGlobalIndex, in Vector2Int blockGlobalIndex)
+        // {
+        //     CollisionInfo result = default(CollisionInfo);
+        //     if (elementGlobalIndex == blockGlobalIndex)
+        //     {
+        //         return default(CollisionInfo);
+        //     }
+        //
+        //     Vector2Int normal = blockGlobalIndex - elementGlobalIndex;
+        //     if (math.abs(normal.x) != 1 || math.abs(normal.y) != 1)
+        //     {
+        //         // elements not near
+        //         return default(CollisionInfo);
+        //     }
+        //
+        //     bool isCanCollision = SparseSandBoxMap2<IElement>.Instance.Exist(elementGlobalIndex)
+        //                        && !SparseSandBoxMap2<IElement>.Instance.Exist(blockGlobalIndex);
+        //
+        //     if (!isCanCollision)
+        //     {
+        //         return default(CollisionInfo);
+        //     }
+        //     else
+        //     {
+        //         // can block
+        //         result.IsCollision = true;
+        //         result.Type = CollisionType.Block;
+        //     }
+        //
+        //     var element = SparseSandBoxMap2<IElement>.Instance[elementGlobalIndex];
+        //     if (math.abs(normal.x) + math.abs(normal.y) == 2)
+        //     {
+        //         // is diagonal
+        //         // test x move
+        //         var xMoveGlobalIndex = elementGlobalIndex + new Vector2Int(normal.x, 0);
+        //         if (SparseSandBoxMap2<IElement>.Instance.Exist(xMoveGlobalIndex))
+        //         {
+        //             var xMoveElement = SparseSandBoxMap2<IElement>.Instance[xMoveGlobalIndex];
+        //             if (xMoveElement.Density <= element.Density)
+        //             {
+        //                 result.Type = CollisionType.Slip;
+        //                 result.NextGlobalIndex = xMoveGlobalIndex;
+        //                 return result;
+        //             }
+        //         }
+        //
+        //         // test y move
+        //         var yMoveGlobalIndex = elementGlobalIndex + new Vector2Int(0, normal.y);
+        //         if (SparseSandBoxMap2<IElement>.Instance.Exist(yMoveGlobalIndex))
+        //         {
+        //             var yMoveElement = SparseSandBoxMap2<IElement>.Instance[yMoveGlobalIndex];
+        //             if (yMoveElement.Density <= element.Density)
+        //             {
+        //                 result.Type = CollisionType.Slip;
+        //                 result.NextGlobalIndex = yMoveGlobalIndex;
+        //                 return result;
+        //             }
+        //         }
+        //     }
+        //     else if (math.abs(normal.x) == 1)
+        //     {
+        //         // test y move
+        //         bool isPositive = Random.Range(0, 2) == 0;
+        //         var offset = isPositive ? new Vector2Int(normal.x, 1) : new Vector2Int(normal.x, -1);
+        //         var yMoveGlobalIndex = elementGlobalIndex + offset;
+        //         if (SparseSandBoxMap2<IElement>.Instance.Exist(yMoveGlobalIndex))
+        //         {
+        //             var yMoveElement = SparseSandBoxMap2<IElement>.Instance[yMoveGlobalIndex];
+        //             if (yMoveElement.Density <= element.Density)
+        //             {
+        //                 result.Type = CollisionType.Slip;
+        //                 result.NextGlobalIndex = yMoveGlobalIndex;
+        //                 return result;
+        //             }
+        //         }
+        //
+        //         offset = !isPositive ? new Vector2Int(normal.x, 1) : new Vector2Int(normal.x, -1);
+        //         yMoveGlobalIndex = elementGlobalIndex + offset;
+        //         if (SparseSandBoxMap2<IElement>.Instance.Exist(yMoveGlobalIndex))
+        //         {
+        //             var yMoveElement = SparseSandBoxMap2<IElement>.Instance[yMoveGlobalIndex];
+        //             if (yMoveElement.Density <= element.Density)
+        //             {
+        //                 result.Type = CollisionType.Slip;
+        //                 result.NextGlobalIndex = yMoveGlobalIndex;
+        //                 return result;
+        //             }
+        //         }
+        //     }
+        //     else if (math.abs(normal.y) == 1)
+        //     {
+        //         // test x move
+        //         bool isPositive = Random.Range(0, 2) == 0;
+        //         var offset = isPositive ? new Vector2Int(1, normal.y) : new Vector2Int(-1, normal.y);
+        //         var xMoveGlobalIndex = elementGlobalIndex + offset;
+        //         if (SparseSandBoxMap2<IElement>.Instance.Exist(xMoveGlobalIndex))
+        //         {
+        //             var xMoveElement = SparseSandBoxMap2<IElement>.Instance[xMoveGlobalIndex];
+        //             if (xMoveElement.Density <= element.Density)
+        //             {
+        //                 result.Type = CollisionType.Slip;
+        //                 result.NextGlobalIndex = xMoveGlobalIndex;
+        //                 return result;
+        //             }
+        //         }
+        //
+        //         offset = !isPositive ? new Vector2Int(1, normal.y) : new Vector2Int(-1, normal.y);
+        //         xMoveGlobalIndex = elementGlobalIndex + offset;
+        //         if (SparseSandBoxMap2<IElement>.Instance.Exist(xMoveGlobalIndex))
+        //         {
+        //             var xMoveElement = SparseSandBoxMap2<IElement>.Instance[xMoveGlobalIndex];
+        //             if (xMoveElement.Density <= element.Density)
+        //             {
+        //                 result.Type = CollisionType.Slip;
+        //                 result.NextGlobalIndex = xMoveGlobalIndex;
+        //                 return result;
+        //             }
+        //         }
+        //     }
+        //
+        //     throw new Exception("impossible collision");
+        // }
 
         /// <summary>
         /// 仅有简单的穿过与碰撞检测
         /// </summary>
         public static CollisionInfo SimpleCollision(in Vector2Int elementGlobalIndex, in Vector2Int blockGlobalIndex)
         {
-            CollisionInfo result = default(CollisionInfo);
             if (elementGlobalIndex == blockGlobalIndex)
             {
-                return result;
+                return default(CollisionInfo);
             }
 
             Vector2Int normal = blockGlobalIndex - elementGlobalIndex;
             if (math.abs(normal.x) != 1 || math.abs(normal.y) != 1)
             {
                 // elements not near
-                return result;
+                return default(CollisionInfo);
             }
 
-            if (!SparseSandBoxMap2<IElement>.Instance.Exist(elementGlobalIndex))
+            if (math.abs(normal.x) == 1 && math.abs(normal.y) == 1)
             {
-                // element not exist
-                return result;
-            }
+                // Diagonal Collision
+                CollisionDiagonalData collisionData = default(CollisionDiagonalData);
+                collisionData.ElementGlobalIndex = elementGlobalIndex;
+                collisionData.BlockGlobalIndex = blockGlobalIndex;
 
-            if (!SparseSandBoxMap2<IElement>.Instance.Exist(blockGlobalIndex))
-            {
-                // is wall collision
-                return SimpleWallCollision(elementGlobalIndex, blockGlobalIndex);
+                if (normal.x == 1 && normal.y == 1)
+                {
+                    collisionData.LeftGlobalIndex = elementGlobalIndex + Vector2Int.down;
+                    collisionData.RightGlobalIndex = elementGlobalIndex + Vector2Int.left;
+                }
+                else if (normal.x == 1 && normal.y == -1)
+                {
+                    collisionData.LeftGlobalIndex = elementGlobalIndex + Vector2Int.left;
+                    collisionData.RightGlobalIndex = elementGlobalIndex + Vector2Int.up;
+                }
+                else if (normal.x == -1 && normal.y == -1)
+                {
+                    collisionData.LeftGlobalIndex = elementGlobalIndex + Vector2Int.up;
+                    collisionData.RightGlobalIndex = elementGlobalIndex + Vector2Int.right;
+                }
+                else if (normal.x == -1 && normal.y == 1)
+                {
+                    collisionData.LeftGlobalIndex = elementGlobalIndex + Vector2Int.right;
+                    collisionData.RightGlobalIndex = elementGlobalIndex + Vector2Int.down;
+                }
+                else
+                {
+                    throw new Exception("Error Diagonal Collision Data");
+                }
+
+                return SimpleDiagonalCollision(collisionData);
             }
             else
             {
-                return SimpleElementCollision(elementGlobalIndex, blockGlobalIndex);
+                // Regular Collision
+                CollisionRegularData collisionData = default(CollisionRegularData);
+                collisionData.ElementGlobalIndex = elementGlobalIndex;
+                collisionData.BlockGlobalIndex = blockGlobalIndex;
+
+                // TODO
+                if (math.abs(normal.x) == 1)
+                {
+                    // x collision
+                }
+                else if (math.abs(normal.y) == 1)
+                {
+                    // y collision
+                }
+                else
+                {
+                    throw new Exception("Error Regular Collision Data");
+                }
+
+                return SimpleRegularCollision(collisionData);
             }
         }
 

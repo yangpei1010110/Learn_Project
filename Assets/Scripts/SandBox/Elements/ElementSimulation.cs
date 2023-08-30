@@ -34,14 +34,14 @@ namespace SandBox.Elements
                 if (!existElement)
                 {
                     // collision edge
-                    ElementPhysics.DetectCollision(elementGlobalIndex.Value, tempGlobalIndex);
+                    var collisionData = ElementPhysics.SimpleCollision(elementGlobalIndex.Value, tempGlobalIndex);
                     return false;
                 }
 
                 var tempElement = SparseSandBoxMap2<IElement>.Instance[tempGlobalIndex];
                 if (tempElement.Type != ElementType.Void)
                 {
-                    ElementPhysics.DetectCollision(elementGlobalIndex.Value, tempGlobalIndex);
+                    var collisionData = ElementPhysics.SimpleCollision(elementGlobalIndex.Value, tempGlobalIndex);
                     return false;
                 }
 
@@ -74,13 +74,6 @@ namespace SandBox.Elements
                 default:
                     return false;
             }
-        }
-
-        public static bool SolidSimulation2(in Vector2Int globalIndex, in int deltaTime)
-        {
-            var element = SparseSandBoxMap2<IElement>.Instance[globalIndex];
-            var blockIndex = MapOffset.GlobalToBlock(globalIndex);
-            var localIndex = MapOffset.GlobalToLocal(globalIndex);
         }
 
         public static bool SolidSimulation(in MapBlock2<IElement> mapBlock, ref IElement element)

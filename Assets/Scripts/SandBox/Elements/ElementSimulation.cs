@@ -5,6 +5,7 @@ using SandBox.Map;
 using SandBox.Map.SandBox;
 using SandBox.Physics;
 using Tools;
+using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -19,6 +20,15 @@ namespace SandBox.Elements
             if (element.Type != ElementType.Void)
             {
                 element.Velocity += MapSetting.GravityForce * deltaTime;
+                if (ElementPhysicsSetting.GravityPoint.HasValue)
+                {
+                    var direction = ElementPhysicsSetting.GravityPoint.Value - (Vector2)globalIndex;
+                    var normalized = direction.normalized;
+                    var Magnitude = math.max(0.001f, direction.sqrMagnitude);
+                    var force = normalized * 100000f / Magnitude;
+                    element.Velocity += force * deltaTime;
+                }
+
                 SparseSandBoxMap2.Instance[globalIndex] = element;
             }
         }
@@ -109,8 +119,19 @@ namespace SandBox.Elements
                 // });
             }
 
+
             // dirty check
             var nextElement = SparseSandBoxMap2.Instance[elementGlobalIndex.Value];
+            // edge detect
+            if (!SparseSandBoxMap2.Instance.Exist(elementGlobalIndex.Value + Vector2Int.up)
+             || !SparseSandBoxMap2.Instance.Exist(elementGlobalIndex.Value + Vector2Int.down)
+             || !SparseSandBoxMap2.Instance.Exist(elementGlobalIndex.Value + Vector2Int.left)
+             || !SparseSandBoxMap2.Instance.Exist(elementGlobalIndex.Value + Vector2Int.right))
+            {
+                // on edge
+                nextElement.Velocity = Vector2.zero;
+            }
+
             // nextElement.Velocity *= ElementPhysicsSetting.VelocityDamping;
             if (nextElement.Velocity.sqrMagnitude > 0.1f)
             {

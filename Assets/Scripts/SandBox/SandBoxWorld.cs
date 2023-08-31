@@ -7,6 +7,7 @@ using SandBox.Elements.Solid;
 using SandBox.Map;
 using SandBox.Map.SandBox;
 using SandBox.Map.Sprite;
+using SandBox.Physics;
 using Tools;
 using Unity.Mathematics;
 using UnityEngine;
@@ -27,6 +28,7 @@ namespace SandBox
             UpdateInput();
             // UpdateTexture();
             UpdateParticle(Time.deltaTime);
+            ElementPhysicsSetting.GravityPoint = null;
         }
 
         private void OnDrawGizmos()
@@ -90,6 +92,12 @@ namespace SandBox
                     SparseSandBoxMap2.Instance[mouseGlobalIndex] = element;
                     SparseSandBoxMap2.Instance.SetDirty(mouseGlobalIndex);
                     SparseSpriteMap.Instance[mouseGlobalIndex] = element.Color;
+                }
+                else if (Input.GetMouseButton(2))
+                {
+                    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                    Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);
+                    ElementPhysicsSetting.GravityPoint = mouseGlobalIndex;
                 }
             }
             {

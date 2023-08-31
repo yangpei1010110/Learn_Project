@@ -20,18 +20,11 @@ namespace Tools
 
         public static void MoveTo(in Vector2Int sourceGlobalIndex, in Vector2Int targetGlobalIndex)
         {
-            
             if (SparseSandBoxMap2.Instance.Exist(targetGlobalIndex)
              && SparseSandBoxMap2.Instance.Exist(sourceGlobalIndex))
             {
                 var source = SparseSandBoxMap2.Instance[sourceGlobalIndex];
                 var target = SparseSandBoxMap2.Instance[targetGlobalIndex];
-                if (targetGlobalIndex.y > sourceGlobalIndex.y)
-                {
-                    Debug.Log($"error move: source:{sourceGlobalIndex}, target:{targetGlobalIndex}");
-                    Debug.Log($"offset source:{source.PositionOffset}, target:{target.PositionOffset}");
-                    Debug.Log($"velocity source:{source.Velocity}, target:{target.Velocity}");
-                }
                 SparseSandBoxMap2.Instance[targetGlobalIndex] = source;
                 SparseSandBoxMap2.Instance[sourceGlobalIndex] = target;
                 SparseSpriteMap.Instance.ReloadColor(targetGlobalIndex);

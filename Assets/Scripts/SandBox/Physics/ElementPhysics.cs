@@ -360,31 +360,31 @@ namespace SandBox.Physics
 
                 if (normal.x == 1)
                 {
-                    collisionData.BlockLeftGlobalIndex = blockGlobalIndex + Vector2Int.right;
-                    collisionData.BlockRightGlobalIndex = blockGlobalIndex + Vector2Int.left;
-                    collisionData.ElementLeftGlobalIndex = elementGlobalIndex + Vector2Int.left;
-                    collisionData.ElementRightGlobalIndex = elementGlobalIndex + Vector2Int.right;
-                }
-                else if (normal.x == -1)
-                {
-                    collisionData.BlockLeftGlobalIndex = blockGlobalIndex + Vector2Int.left;
-                    collisionData.BlockRightGlobalIndex = blockGlobalIndex + Vector2Int.right;
-                    collisionData.ElementLeftGlobalIndex = elementGlobalIndex + Vector2Int.right;
-                    collisionData.ElementRightGlobalIndex = elementGlobalIndex + Vector2Int.left;
-                }
-                else if (normal.y == 1)
-                {
                     collisionData.BlockLeftGlobalIndex = blockGlobalIndex + Vector2Int.down;
                     collisionData.BlockRightGlobalIndex = blockGlobalIndex + Vector2Int.up;
                     collisionData.ElementLeftGlobalIndex = elementGlobalIndex + Vector2Int.up;
                     collisionData.ElementRightGlobalIndex = elementGlobalIndex + Vector2Int.down;
                 }
-                else if (normal.y == -1)
+                else if (normal.x == -1)
                 {
                     collisionData.BlockLeftGlobalIndex = blockGlobalIndex + Vector2Int.up;
                     collisionData.BlockRightGlobalIndex = blockGlobalIndex + Vector2Int.down;
                     collisionData.ElementLeftGlobalIndex = elementGlobalIndex + Vector2Int.down;
                     collisionData.ElementRightGlobalIndex = elementGlobalIndex + Vector2Int.up;
+                }
+                else if (normal.y == 1)
+                {
+                    collisionData.BlockLeftGlobalIndex = blockGlobalIndex + Vector2Int.right;
+                    collisionData.BlockRightGlobalIndex = blockGlobalIndex + Vector2Int.left;
+                    collisionData.ElementLeftGlobalIndex = elementGlobalIndex + Vector2Int.left;
+                    collisionData.ElementRightGlobalIndex = elementGlobalIndex + Vector2Int.right;
+                }
+                else if (normal.y == -1)
+                {
+                    collisionData.BlockLeftGlobalIndex = blockGlobalIndex + Vector2Int.left;
+                    collisionData.BlockRightGlobalIndex = blockGlobalIndex + Vector2Int.right;
+                    collisionData.ElementLeftGlobalIndex = elementGlobalIndex + Vector2Int.right;
+                    collisionData.ElementRightGlobalIndex = elementGlobalIndex + Vector2Int.left;
                 }
                 else
                 {

@@ -33,7 +33,7 @@ namespace SandBox
         {
             // draw dirty rect
             Gizmos.color = Color.red;
-            foreach (MapBlock block in SparseSandBoxMap.Instance._mapBlocks.Values)
+            foreach (MapBlock2<IElement> block in SparseSandBoxMap2.Instance._mapBlocks.Values)
             {
                 Vector2Int minRect = new(block._dirtyRectMinX, block._dirtyRectMinY);
                 Vector2Int maxRect = new(block._dirtyRectMaxX, block._dirtyRectMaxY);

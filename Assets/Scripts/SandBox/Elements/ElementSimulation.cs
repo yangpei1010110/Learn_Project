@@ -43,8 +43,8 @@ namespace SandBox.Elements
                 foreach (Vector2Int stepGlobalIndex in path)
                 {
                     var collisionData = ElementPhysics.SimpleCollision(elementGlobalIndex.Value, stepGlobalIndex);
-                    if (collisionData.Type != ElementPhysics.CollisionType.Empty
-                     && collisionData.Type != ElementPhysics.CollisionType.Block)
+                    if (collisionData.Type == ElementPhysics.CollisionType.Swap
+                     || collisionData.Type == ElementPhysics.CollisionType.Slip)
                     {
                         // is move
                         SandBoxTool.MoveTo(elementGlobalIndex.Value, collisionData.NextGlobalIndex);
@@ -62,10 +62,6 @@ namespace SandBox.Elements
                     else if (collisionData.Type == ElementPhysics.CollisionType.Block)
                     {
                         SparseSandBoxMap2.Instance[elementGlobalIndex.Value].Velocity = Vector2.zero;
-                        break;
-                    }
-                    else
-                    {
                         break;
                     }
                 }
@@ -113,14 +109,9 @@ namespace SandBox.Elements
                 // });
             }
 
-            if (!elementGlobalIndex.HasValue)
-            {
-                return;
-            }
-
             // dirty check
             var nextElement = SparseSandBoxMap2.Instance[elementGlobalIndex.Value];
-            nextElement.Velocity *= ElementPhysicsSetting.VelocityDamping;
+            // nextElement.Velocity *= ElementPhysicsSetting.VelocityDamping;
             if (nextElement.Velocity.sqrMagnitude > 0.1f)
             {
                 SparseSandBoxMap2.Instance.SetDirty(elementGlobalIndex.Value);

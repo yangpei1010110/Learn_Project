@@ -1,13 +1,22 @@
 #nullable enable
 
 using System.Collections.Generic;
+using SandBox.Elements.Interface;
 using SandBox.Map.SandBox;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace SandBox.Map.Sprite
 {
     public class SparseSpriteMap
     {
+        public void ReloadColor(in Vector2Int globalIndex)
+        {
+            Vector2Int localIndex = MapOffset.GlobalToLocal(globalIndex);
+            GetOrNewBlock(globalIndex).SetPixel(localIndex.x, localIndex.y, SparseSandBoxMap2.Instance[globalIndex].Color);
+            _dirtyBlocks.Add(MapOffset.GlobalToBlock(globalIndex));
+        }
+
         /// <summary>
         ///     获取或设置颜色
         /// </summary>
@@ -97,6 +106,14 @@ namespace SandBox.Map.Sprite
 
         #region FlushColor
 
+        public void ForceFlush()
+        {
+            foreach (Vector2Int blockIndex in _mapBlockTexture.Keys.ToArrayPooled())
+            {
+                UpdateColorFormMapBlock(blockIndex);
+            }
+        }
+
         /// <summary>
         ///     刷新所有脏块
         /// </summary>
@@ -115,15 +132,12 @@ namespace SandBox.Map.Sprite
             if (_mapBlockTexture.TryGetValue(blockIndex, out Texture2D? texture))
             {
                 // TODO update MapBlock to MapBlock2
-                MapBlock? mapBlock = SparseSandBoxMap.Instance._mapBlocks[blockIndex];
-                // MapBlock2<IElement> mapBlock = SparseSandBoxMap2<IElement>.Instance._mapBlocks[blockIndex];
-                int mapLength = MapSetting.MapLocalSizePerUnit;
-                for (int y = 0; y < mapLength; y++)
+                // MapBlock? mapBlock = SparseSandBoxMap.Instance._mapBlocks[blockIndex];
+                MapBlock2<IElement> mapBlock = SparseSandBoxMap2.Instance._mapBlocks[blockIndex];
+                for (int y = 0; y < MapSetting.MapLocalSizePerUnit; y++)
+                for (int x = 0; x < MapSetting.MapLocalSizePerUnit; x++)
                 {
-                    for (int x = 0; x < mapLength; x++)
-                    {
-                        texture.SetPixel(x, y, mapBlock[new Vector2Int(x, y)].Color);
-                    }
+                    texture.SetPixel(x, y, mapBlock[new Vector2Int(x, y)].Color);
                 }
 
                 texture.Apply();

@@ -63,6 +63,17 @@ namespace SandBox.Map
 
         #region GlobalTo
 
+        public static Vector2Int GlobalRound(in Vector2 floatGlobalIndex)
+        {
+            float x = floatGlobalIndex.x;
+            float y = floatGlobalIndex.y;
+
+            // x /= MapSetting.MapLocalSizePerUnit;
+            // y /= MapSetting.MapLocalSizePerUnit;
+
+            return new Vector2Int((int)(x + 0.5f), (int)(y + 0.5f));
+        }
+
         public static Vector2Int GlobalToBlock(in Vector2Int globalIndex)
         {
             float x = globalIndex.x;

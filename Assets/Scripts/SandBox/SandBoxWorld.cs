@@ -1,6 +1,7 @@
 #nullable enable
 
 using System.Collections.Generic;
+using SandBox.Elements.Interface;
 using SandBox.Elements.Liquid;
 using SandBox.Elements.Solid;
 using SandBox.Map;
@@ -14,17 +15,18 @@ namespace SandBox
 {
     public class SandBoxWorld : MonoBehaviour
     {
-        public SandBoxMap SandBoxMap;
-
-        private void Start()
-        {
-            SandBoxMap = new SandBoxMap();
-        }
+        // public SandBoxMap SandBoxMap;
+        //
+        // private void Start()
+        // {
+        //     SandBoxMap = new SandBoxMap();
+        // }
 
         private void Update()
         {
             UpdateInput();
-            UpdateTexture();
+            // UpdateTexture();
+            UpdateParticle(Time.deltaTime);
         }
 
         private void OnDrawGizmos()
@@ -74,12 +76,20 @@ namespace SandBox
                 if (Input.GetMouseButton(0))
                 {
                     Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                    SandBoxMap[mousePosition] = new Sand();
+                    Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);
+                    IElement element = new Sand();
+                    SparseSandBoxMap2.Instance[mouseGlobalIndex] = element;
+                    SparseSandBoxMap2.Instance.SetDirty(mouseGlobalIndex);
+                    SparseSpriteMap.Instance[mouseGlobalIndex] = element.Color;
                 }
                 else if (Input.GetMouseButton(1))
                 {
                     Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                    SandBoxMap[mousePosition] = new Water();
+                    Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);
+                    IElement element = new Water();
+                    SparseSandBoxMap2.Instance[mouseGlobalIndex] = element;
+                    SparseSandBoxMap2.Instance.SetDirty(mouseGlobalIndex);
+                    SparseSpriteMap.Instance[mouseGlobalIndex] = element.Color;
                 }
             }
             {
@@ -94,10 +104,16 @@ namespace SandBox
             }
         }
 
-        private void UpdateTexture()
+        private void UpdateParticle(in float deltaTime)
         {
-            SandBoxMap.UpdateMap();
+            SparseSandBoxMap2.Instance.UpdateParticle(deltaTime);
+            SparseSpriteMap.Instance.Flush();
         }
+
+        // private void UpdateTexture()
+        // {
+        //     SandBoxMap.UpdateMap();
+        // }
 
         #region 鼠标范围显示
 
@@ -123,7 +139,7 @@ namespace SandBox
 
         private void UpdateLine(in Vector2Int mouseGlobalIndex)
         {
-            LineTool2D.LineCast(Vector2Int.zero, mouseGlobalIndex, pixel =>
+            LineTool2D.DrawLine(Vector2Int.zero, mouseGlobalIndex, pixel =>
             {
                 SparseSpriteMap.Instance.SafeSet(pixel, Color.red);
                 lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(pixel));

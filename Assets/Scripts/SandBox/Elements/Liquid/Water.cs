@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace SandBox.Elements.Liquid
 {
-    public class Water : IElement
+    public struct Water : IElement
     {
         public float       Life           { get; set; }
         public long        Step           { get; set; }

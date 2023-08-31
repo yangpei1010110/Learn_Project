@@ -1,5 +1,7 @@
 #nullable enable
 
+using SandBox.Elements;
+using SandBox.Elements.Void;
 using UnityEngine;
 
 namespace SandBox.Map
@@ -10,6 +12,21 @@ namespace SandBox.Map
         {
             BlockIndex = MapOffset.GlobalToBlock(globalIndex);
             _mapElements = new T[MapSetting.MapLocalSizePerUnit * MapSetting.MapLocalSizePerUnit];
+        }
+
+        public void UpdateElement(in float deltaTime)
+        {
+            int xMin = _dirtyRectMinX;
+            int xMax = _dirtyRectMaxX;
+            int yMin = _dirtyRectMinY;
+            int yMax = _dirtyRectMaxY;
+            ClearDirtyRect();
+            for (int j = yMin; j <= yMax; j++)
+            for (int i = xMin; i <= xMax; i++)
+            {
+                var globalIndex = MapOffset.LocalToGlobal(BlockIndex, new Vector2Int(i, j));
+                ElementSimulation.Run(globalIndex, deltaTime);
+            }
         }
 
         public ref T this[in Vector2Int globalIndex]
@@ -86,7 +103,7 @@ namespace SandBox.Map
 
         #region Data
 
-        private readonly T[]        _mapElements;
+        public readonly T[]        _mapElements;
         public readonly  Vector2Int BlockIndex;
 
         #endregion

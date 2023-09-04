@@ -75,6 +75,7 @@ namespace SandBox.Map.Sprite
                 UnityEngine.Sprite sprite = CreateSprite(tex2D);
 
                 go.GetComponent<SpriteRenderer>().sprite = sprite;
+                go.transform.localScale = new Vector3(MapSetting.MapWorldSizePerUnit, MapSetting.MapWorldSizePerUnit, 1f);
 
                 _mapBlockTexture.Add(blockIndex, tex2D);
                 _mapBlockSprite.Add(blockIndex, sprite);

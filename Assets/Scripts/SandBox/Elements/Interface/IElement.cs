@@ -6,6 +6,7 @@ namespace SandBox.Elements.Interface
 {
     public interface IElement
     {
+        public bool        IsStatic       { get; }
         public float       Life           { get; set; }
         public long        Step           { get; set; }
         public Vector2Int  Position       { get; set; }

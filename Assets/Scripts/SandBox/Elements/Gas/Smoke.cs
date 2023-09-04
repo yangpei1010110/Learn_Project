@@ -5,6 +5,7 @@ namespace SandBox.Elements.Gas
 {
     public struct Smoke : IElement
     {
+        public bool        IsStatic       => false;
         public float       Life           { get; set; }
         public long        Step           { get; set; }
         public Vector2Int  Position       { get; set; }

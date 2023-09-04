@@ -12,6 +12,7 @@ using SandBox.Physics;
 using Tools;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace SandBox
 {
@@ -72,22 +73,29 @@ namespace SandBox
             {
                 if (Input.GetMouseButton(0) && Selected != null && Selected.GetInterface(nameof(IElement)) != null)
                 {
-                    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                    Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);
-                    for (int y = -mouseCircleRadius; y <= mouseCircleRadius; y++)
-                    for (int x = -mouseCircleRadius; x <= mouseCircleRadius; x++)
+                    var eventData = new PointerEventData(EventSystem.current);
+                    eventData.position = Input.mousePosition;
+                    var results = new List<RaycastResult>();
+                    EventSystem.current.RaycastAll(eventData, results);
+                    if (results.Count == 0)
                     {
-                        if (y * y + x * x <= mouseCircleRadius * mouseCircleRadius)
+                        Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                        Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);
+                        for (int y = -mouseCircleRadius; y <= mouseCircleRadius; y++)
+                        for (int x = -mouseCircleRadius; x <= mouseCircleRadius; x++)
                         {
-                            Vector2Int elementGlobalIndex = mouseGlobalIndex + new Vector2Int(x, y);
-                            IElement element = (IElement)Activator.CreateInstance(Selected);
-                            _cacheSparseSandBoxMap[elementGlobalIndex] = element;
-                            _cacheSparseSandBoxMap.SetDirty(elementGlobalIndex);
-                            cacheSparseSpriteMap[elementGlobalIndex] = element.Color;
+                            if (y * y + x * x <= mouseCircleRadius * mouseCircleRadius)
+                            {
+                                Vector2Int elementGlobalIndex = mouseGlobalIndex + new Vector2Int(x, y);
+                                IElement element = (IElement)Activator.CreateInstance(Selected);
+                                _cacheSparseSandBoxMap[elementGlobalIndex] = element;
+                                _cacheSparseSandBoxMap.SetDirty(elementGlobalIndex);
+                                cacheSparseSpriteMap[elementGlobalIndex] = element.Color;
+                            }
                         }
                     }
                 }
-                else if (Input.GetMouseButton(2))
+                else if (Input.GetMouseButton(1))
                 {
                     Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                     Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);

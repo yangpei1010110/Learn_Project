@@ -23,7 +23,7 @@ namespace SandBox.Elements
                 return;
             }
 
-            element.Velocity += MapSetting.GravityForce * deltaTime;
+            element.Velocity += element.Density >= 0f ? MapSetting.GravityForce * deltaTime : -MapSetting.GravityForce * deltaTime;
             if (ElementPhysicsSetting.GravityPoint.HasValue)
             {
                 Vector2 direction = ElementPhysicsSetting.GravityPoint.Value - (Vector2)globalIndex;
@@ -49,11 +49,23 @@ namespace SandBox.Elements
             Vector2 offset = nextWorldPosition - nextGlobalIndex;
             element.PositionOffset = offset;
 
+            if (element.Type == ElementType.Gas && Time.frameCount % 100 == 0)
+            {
+                Debug.Log($"Gas:Velocity:{element.Velocity}, Offset:{element.PositionOffset}, GlobalIndex:{globalIndex}, NextGlobalIndex:{nextGlobalIndex}");
+            }
+
             Vector2Int? elementGlobalIndex = globalIndex;
             if (globalIndex != nextGlobalIndex)
             {
+                int step = 0;
                 LineTool2D.LineCast2(globalIndex, nextGlobalIndex, stepGlobalIndex =>
                 {
+                    step += 1;
+                    if (step >= ElementPhysicsSetting.maxStepDistance)
+                    {
+                        return false;
+                    }
+
                     ElementPhysics.CollisionInfo collisionData = ElementPhysics.SimpleCollision(elementGlobalIndex.Value, stepGlobalIndex);
                     if (collisionData.Type == ElementPhysics.CollisionType.Swap
                      || collisionData.Type == ElementPhysics.CollisionType.Slip)
@@ -62,14 +74,14 @@ namespace SandBox.Elements
                         SandBoxTool.MoveTo(elementGlobalIndex.Value, collisionData.NextGlobalIndex);
                         elementGlobalIndex = collisionData.NextGlobalIndex;
 
-                        // if (collisionData.Type == ElementPhysics.CollisionType.Swap)
-                        // {
-                        //     cacheSparseSandBoxMap2[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.VelocityDamping;
-                        // }
-                        // else if (collisionData.Type == ElementPhysics.CollisionType.Slip)
-                        // {
-                        //     cacheSparseSandBoxMap2[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.VelocityDamping;
-                        // }
+                        if (collisionData.Type == ElementPhysics.CollisionType.Swap)
+                        {
+                            _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.VelocityDamping;
+                        }
+                        else if (collisionData.Type == ElementPhysics.CollisionType.Slip)
+                        {
+                            _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.CollisionDamping;
+                        }
                     }
                     else if (collisionData.Type == ElementPhysics.CollisionType.Block)
                     {

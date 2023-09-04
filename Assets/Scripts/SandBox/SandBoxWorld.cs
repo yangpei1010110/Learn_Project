@@ -1,5 +1,6 @@
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using SandBox.Elements.Interface;
 using SandBox.Elements.Liquid;
@@ -18,11 +19,11 @@ namespace SandBox
     {
         private static SparseSandBoxMap _cacheSparseSandBoxMap = SparseSandBoxMap.Instance;
         private static SparseSpriteMap  cacheSparseSpriteMap   = SparseSpriteMap.Instance;
+        public static  Type?            Selected;
 
         private void Update()
         {
             UpdateInput();
-            // UpdateTexture();
             UpdateParticle(Time.deltaTime);
             ElementPhysicsSetting.GravityPoint = null;
         }
@@ -52,8 +53,6 @@ namespace SandBox
                 globalMinRect.y -= pixelSize;
                 globalMaxRect.x += pixelSize;
                 globalMaxRect.x += pixelSize;
-                // Vector2 worldRectMin = (Vector2)block.BlockIndex * mapSetting.MapWorldSizePerUnit + (Vector2)minRect / mapSetting.MapLocalSizePerUnit;
-                // Vector2 worldRectMax = (Vector2)block.BlockIndex * mapSetting.MapWorldSizePerUnit + (Vector2)maxRect / mapSetting.MapLocalSizePerUnit;
 
                 Vector2 topLeft = new(globalMinRect.x - pixelSize, globalMaxRect.y + pixelSize);
                 Vector2 topRight = new(globalMaxRect.x - pixelSize, globalMaxRect.y + pixelSize);
@@ -71,7 +70,7 @@ namespace SandBox
         private void UpdateInput()
         {
             {
-                if (Input.GetMouseButton(0))
+                if (Input.GetMouseButton(0) && Selected != null && Selected.GetInterface(nameof(IElement)) != null)
                 {
                     Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                     Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);
@@ -81,24 +80,7 @@ namespace SandBox
                         if (y * y + x * x <= mouseCircleRadius * mouseCircleRadius)
                         {
                             Vector2Int elementGlobalIndex = mouseGlobalIndex + new Vector2Int(x, y);
-                            IElement element = new Sand();
-                            _cacheSparseSandBoxMap[elementGlobalIndex] = element;
-                            _cacheSparseSandBoxMap.SetDirty(elementGlobalIndex);
-                            cacheSparseSpriteMap[elementGlobalIndex] = element.Color;
-                        }
-                    }
-                }
-                else if (Input.GetMouseButton(1))
-                {
-                    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                    Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);
-                    for (int y = -mouseCircleRadius; y <= mouseCircleRadius; y++)
-                    for (int x = -mouseCircleRadius; x <= mouseCircleRadius; x++)
-                    {
-                        if (y * y + x * x <= mouseCircleRadius * mouseCircleRadius)
-                        {
-                            Vector2Int elementGlobalIndex = mouseGlobalIndex + new Vector2Int(x, y);
-                            IElement element = new Water();
+                            IElement element = (IElement)Activator.CreateInstance(Selected);
                             _cacheSparseSandBoxMap[elementGlobalIndex] = element;
                             _cacheSparseSandBoxMap.SetDirty(elementGlobalIndex);
                             cacheSparseSpriteMap[elementGlobalIndex] = element.Color;
@@ -132,11 +114,6 @@ namespace SandBox
             cacheSparseSpriteMap.Flush();
         }
 
-        // private void UpdateTexture()
-        // {
-        //     SandBoxMap.UpdateMap();
-        // }
-
         #region 鼠标范围显示
 
         private float               mouseCircleRadiusY    = 1f;
@@ -161,16 +138,8 @@ namespace SandBox
 
         private void UpdateLine(in Vector2Int mouseGlobalIndex)
         {
-            int maxCount = 100;
-            int count = 0;
             LineTool2D.LineCast2(Vector2Int.zero, mouseGlobalIndex, pixel =>
             {
-                count += 1;
-                if (count >= maxCount)
-                {
-                    return false;
-                }
-
                 cacheSparseSpriteMap.SafeSet(pixel, Color.red);
                 lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(pixel));
                 return true;

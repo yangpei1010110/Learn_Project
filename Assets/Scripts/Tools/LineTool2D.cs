@@ -12,11 +12,6 @@ namespace Tools
     {
         public static void LineCast2(in Vector2Int p0, in Vector2Int p1, in Func<Vector2Int, bool> plot)
         {
-            int x0 = p0.x;
-            int x1 = p1.x;
-            int y0 = p0.y;
-            int y1 = p1.y;
-
             if (!plot(p0))
             {
                 return;

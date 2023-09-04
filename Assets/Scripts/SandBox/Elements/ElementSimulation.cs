@@ -17,25 +17,32 @@ namespace SandBox.Elements
         private static void UpdateVelocity(in Vector2Int globalIndex, in float deltaTime)
         {
             var element = SparseSandBoxMap2.Instance[globalIndex];
-            if (element.Type != ElementType.Void)
+            if (element.Type == ElementType.Void)
             {
-                element.Velocity += MapSetting.GravityForce * deltaTime;
-                if (ElementPhysicsSetting.GravityPoint.HasValue)
-                {
-                    var direction = ElementPhysicsSetting.GravityPoint.Value - (Vector2)globalIndex;
-                    var normalized = direction.normalized;
-                    var Magnitude = math.max(0.001f, direction.sqrMagnitude);
-                    var force = normalized * 100000f / Magnitude;
-                    element.Velocity += force * deltaTime;
-                }
-
-                SparseSandBoxMap2.Instance[globalIndex] = element;
+                return;
             }
+
+            element.Velocity += MapSetting.GravityForce * deltaTime;
+            if (ElementPhysicsSetting.GravityPoint.HasValue)
+            {
+                var direction = ElementPhysicsSetting.GravityPoint.Value - (Vector2)globalIndex;
+                var normalized = direction.normalized;
+                var Magnitude = math.max(0.001f, direction.sqrMagnitude);
+                var force = normalized * 100000f / Magnitude;
+                element.Velocity += force * deltaTime;
+            }
+
+            SparseSandBoxMap2.Instance[globalIndex] = element;
         }
 
         private static void UpdateByCollision(Vector2Int globalIndex, in float deltaTime)
         {
             var element = SparseSandBoxMap2.Instance[globalIndex];
+            if (element.Type == ElementType.Void)
+            {
+                return;
+            }
+
             Vector2 nextWorldPosition = globalIndex + element.PositionOffset + element.Velocity * deltaTime;
             Vector2Int nextGlobalIndex = MapOffset.GlobalRound(nextWorldPosition);
             Vector2 offset = nextWorldPosition - nextGlobalIndex;
@@ -49,8 +56,7 @@ namespace SandBox.Elements
             // TODO 这里待完善 此处出现碰撞后立刻结束 但是应继续运行
             if (globalIndex != nextGlobalIndex)
             {
-                var path = LineTool2D.LineCast(globalIndex, nextGlobalIndex);
-                foreach (Vector2Int stepGlobalIndex in path)
+                LineTool2D.LineCast2(globalIndex, nextGlobalIndex, stepGlobalIndex =>
                 {
                     var collisionData = ElementPhysics.SimpleCollision(elementGlobalIndex.Value, stepGlobalIndex);
                     if (collisionData.Type == ElementPhysics.CollisionType.Swap
@@ -72,9 +78,37 @@ namespace SandBox.Elements
                     else if (collisionData.Type == ElementPhysics.CollisionType.Block)
                     {
                         SparseSandBoxMap2.Instance[elementGlobalIndex.Value].Velocity = Vector2.zero;
-                        break;
+                        return false;
                     }
-                }
+
+                    return true;
+                });
+                // var path = LineTool2D.LineCast(globalIndex, nextGlobalIndex);
+                // foreach (Vector2Int stepGlobalIndex in path)
+                // {
+                //     var collisionData = ElementPhysics.SimpleCollision(elementGlobalIndex.Value, stepGlobalIndex);
+                //     if (collisionData.Type == ElementPhysics.CollisionType.Swap
+                //      || collisionData.Type == ElementPhysics.CollisionType.Slip)
+                //     {
+                //         // is move
+                //         SandBoxTool.MoveTo(elementGlobalIndex.Value, collisionData.NextGlobalIndex);
+                //         elementGlobalIndex = collisionData.NextGlobalIndex;
+                //
+                //         // if (collisionData.Type == ElementPhysics.CollisionType.Swap)
+                //         // {
+                //         //     SparseSandBoxMap2.Instance[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.VelocityDamping;
+                //         // }
+                //         // else if (collisionData.Type == ElementPhysics.CollisionType.Slip)
+                //         // {
+                //         //     SparseSandBoxMap2.Instance[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.VelocityDamping;
+                //         // }
+                //     }
+                //     else if (collisionData.Type == ElementPhysics.CollisionType.Block)
+                //     {
+                //         SparseSandBoxMap2.Instance[elementGlobalIndex.Value].Velocity = Vector2.zero;
+                //         break;
+                //     }
+                // }
                 // LineTool2D.DrawLine(globalIndex, nextGlobalIndex, stepGlobalIndex =>
                 // {
                 //     // Debug.Log($"Step:{SparseSandBoxMap2.Instance.Step}, " +
@@ -141,6 +175,11 @@ namespace SandBox.Elements
 
         public static bool Run(in Vector2Int globalIndex, in float deltaTime)
         {
+            var element = SparseSandBoxMap2.Instance[globalIndex];
+            if (element.Type == ElementType.Void)
+            {
+                return false;
+            }
             // if (Time.frameCount % 100 == 0)
             // {
             //     Debug.Log(@"ElementSimulation.Run");

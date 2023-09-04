@@ -16,12 +16,8 @@ namespace SandBox
 {
     public class SandBoxWorld : MonoBehaviour
     {
-        // public SandBoxMap SandBoxMap;
-        //
-        // private void Start()
-        // {
-        //     SandBoxMap = new SandBoxMap();
-        // }
+        private static SparseSandBoxMap2 cacheSparseSandBoxMap2 = SparseSandBoxMap2.Instance;
+        private static SparseSpriteMap   cacheSparseSpriteMap   = SparseSpriteMap.Instance;
 
         private void Update()
         {
@@ -35,7 +31,7 @@ namespace SandBox
         {
             // draw dirty rect
             Gizmos.color = Color.red;
-            foreach (MapBlock2<IElement> block in SparseSandBoxMap2.Instance._mapBlocks.Values)
+            foreach (MapBlock2<IElement> block in cacheSparseSandBoxMap2._mapBlocks.Values)
             {
                 Vector2Int minRect = new(block._dirtyRectMinX, block._dirtyRectMinY);
                 Vector2Int maxRect = new(block._dirtyRectMaxX, block._dirtyRectMaxY);
@@ -79,19 +75,35 @@ namespace SandBox
                 {
                     Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                     Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);
-                    IElement element = new Sand();
-                    SparseSandBoxMap2.Instance[mouseGlobalIndex] = element;
-                    SparseSandBoxMap2.Instance.SetDirty(mouseGlobalIndex);
-                    SparseSpriteMap.Instance[mouseGlobalIndex] = element.Color;
+                    for (int y = -mouseCircleRadius; y <= mouseCircleRadius; y++)
+                    for (int x = -mouseCircleRadius; x <= mouseCircleRadius; x++)
+                    {
+                        if (y * y + x * x <= mouseCircleRadius * mouseCircleRadius)
+                        {
+                            var elementGlobalIndex = mouseGlobalIndex + new Vector2Int(x, y);
+                            IElement element = new Sand();
+                            cacheSparseSandBoxMap2[elementGlobalIndex] = element;
+                            cacheSparseSandBoxMap2.SetDirty(elementGlobalIndex);
+                            cacheSparseSpriteMap[elementGlobalIndex] = element.Color;
+                        }
+                    }
                 }
                 else if (Input.GetMouseButton(1))
                 {
                     Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                     Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);
-                    IElement element = new Water();
-                    SparseSandBoxMap2.Instance[mouseGlobalIndex] = element;
-                    SparseSandBoxMap2.Instance.SetDirty(mouseGlobalIndex);
-                    SparseSpriteMap.Instance[mouseGlobalIndex] = element.Color;
+                    for (int y = -mouseCircleRadius; y <= mouseCircleRadius; y++)
+                    for (int x = -mouseCircleRadius; x <= mouseCircleRadius; x++)
+                    {
+                        if (y * y + x * x <= mouseCircleRadius * mouseCircleRadius)
+                        {
+                            var elementGlobalIndex = mouseGlobalIndex + new Vector2Int(x, y);
+                            IElement element = new Water();
+                            cacheSparseSandBoxMap2[elementGlobalIndex] = element;
+                            cacheSparseSandBoxMap2.SetDirty(elementGlobalIndex);
+                            cacheSparseSpriteMap[elementGlobalIndex] = element.Color;
+                        }
+                    }
                 }
                 else if (Input.GetMouseButton(2))
                 {
@@ -108,14 +120,16 @@ namespace SandBox
                 Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 Vector2Int mouseGlobalIndex = MapOffset.WorldToGlobal(mousePosition);
                 UpdateCircleSprite(mouseGlobalIndex);
+                #if UNITY_EDITOR
                 UpdateLine(mouseGlobalIndex);
+                #endif
             }
         }
 
         private void UpdateParticle(in float deltaTime)
         {
-            SparseSandBoxMap2.Instance.UpdateParticle(deltaTime);
-            SparseSpriteMap.Instance.Flush();
+            cacheSparseSandBoxMap2.UpdateParticle(deltaTime);
+            cacheSparseSpriteMap.Flush();
         }
 
         // private void UpdateTexture()
@@ -135,21 +149,29 @@ namespace SandBox
             // 更新最后一帧的区块
             foreach (Vector2Int blockIndex in lastUpdateSpriteIndex)
             {
-                SparseSpriteMap.Instance.UpdateColorFormMapBlock(blockIndex);
+                cacheSparseSpriteMap.UpdateColorFormMapBlock(blockIndex);
             }
 
             CircleTool2D.DrawCircle(mouseGlobalIndex, mouseCircleRadius, pixel =>
             {
-                SparseSpriteMap.Instance.SafeSet(pixel, Color.white);
+                cacheSparseSpriteMap.SafeSet(pixel, Color.white);
                 lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(pixel));
             });
         }
 
         private void UpdateLine(in Vector2Int mouseGlobalIndex)
         {
-            LineTool2D.DrawLine(Vector2Int.zero, mouseGlobalIndex, pixel =>
+            var maxCount = 100;
+            var count = 0;
+            LineTool2D.LineCast2(Vector2Int.zero, mouseGlobalIndex, pixel =>
             {
-                SparseSpriteMap.Instance.SafeSet(pixel, Color.red);
+                count += 1;
+                if (count >= maxCount)
+                {
+                    return false;
+                }
+
+                cacheSparseSpriteMap.SafeSet(pixel, Color.red);
                 lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(pixel));
                 return true;
             });

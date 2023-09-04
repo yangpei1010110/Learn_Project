@@ -10,10 +10,11 @@ namespace SandBox.Map.Sprite
 {
     public class SparseSpriteMap
     {
+        private static SparseSandBoxMap2 cacheSparseSandBoxMap2 = SparseSandBoxMap2.Instance;
         public void ReloadColor(in Vector2Int globalIndex)
         {
             Vector2Int localIndex = MapOffset.GlobalToLocal(globalIndex);
-            GetOrNewBlock(globalIndex).SetPixel(localIndex.x, localIndex.y, SparseSandBoxMap2.Instance[globalIndex].Color);
+            GetOrNewBlock(globalIndex).SetPixel(localIndex.x, localIndex.y, cacheSparseSandBoxMap2[globalIndex].Color);
             _dirtyBlocks.Add(MapOffset.GlobalToBlock(globalIndex));
         }
 

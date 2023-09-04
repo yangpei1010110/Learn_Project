@@ -10,6 +10,119 @@ namespace Tools
 {
     public static class LineTool2D
     {
+        public static void LineCast2(in Vector2Int p0, in Vector2Int p1, in Func<Vector2Int, bool> plot)
+        {
+            int x0 = p0.x;
+            int x1 = p1.x;
+            int y0 = p0.y;
+            int y1 = p1.y;
+
+            if (!plot(p0))
+            {
+                return;
+            }
+
+            Vector2Int temp = Vector2Int.zero;
+            Vector2Int offset = p1 - p0;
+            if (offset == Vector2Int.zero)
+            {
+                return;
+            }
+
+            var xStep = offset.x >= 0 ? 1 : -1;
+            var yStep = offset.y >= 0 ? 1 : -1;
+            if (offset.x == 0)
+            {
+                // y step
+                while (temp != offset)
+                {
+                    temp.y += yStep;
+                    if (!plot(p0 + temp))
+                    {
+                        return;
+                    }
+                }
+
+                return;
+            }
+            else if (offset.y == 0)
+            {
+                // x step
+                while (temp != offset)
+                {
+                    temp.x += xStep;
+                    if (!plot(p0 + temp))
+                    {
+                        return;
+                    }
+                }
+
+                return;
+            }
+            else
+            {
+                // normal step
+                var absY = math.abs(offset.y);
+                var absX = math.abs(offset.x);
+
+                if (absY == absX)
+                {
+                    // 45 degree
+                    var step = new Vector2Int(xStep, yStep);
+                    while (temp != offset)
+                    {
+                        temp += step;
+                        if (!plot(p0 + temp))
+                        {
+                            return;
+                        }
+                    }
+
+                    return;
+                }
+
+                var slope = offset.y / (float)offset.x;
+                if (absY > absX)
+                {
+                    // y longer
+                    while (math.abs(temp.x) < math.abs(offset.x))
+                    {
+                        temp.y += yStep;
+                        if (math.abs(temp.x - temp.y / slope) >= 1f)
+                        {
+                            temp.x += xStep;
+                        }
+
+                        if (!plot(p0 + temp))
+                        {
+                            return;
+                        }
+                    }
+
+                    return;
+                }
+                else
+                {
+                    // x longer
+                    while (math.abs(temp.y) < math.abs(offset.y))
+                    {
+                        temp.x += xStep;
+                        if (math.abs(temp.y - temp.x * slope) >= 1f)
+                        {
+                            temp.y += yStep;
+                        }
+
+                        if (!plot(p0 + temp))
+                        {
+                            return;
+                        }
+                    }
+
+                    return;
+                }
+            }
+        }
+
         public static Vector2Int[] LineCast(in Vector2Int p0, in Vector2Int p1)
         {
             List<Vector2Int> result = new();

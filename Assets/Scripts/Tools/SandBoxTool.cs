@@ -9,6 +9,9 @@ namespace Tools
 {
     public static class SandBoxTool
     {
+        private static SparseSandBoxMap2 cacheSparseSandBoxMap2 = SparseSandBoxMap2.Instance;
+        private static SparseSpriteMap cacheSparseSpriteMap = SparseSpriteMap.Instance;
+        
         public static void SwapGlobalIndex(ref IElement element1, ref IElement element2, in Vector2Int globalIndex1, in Vector2Int globalIndex2)
         {
             Vector2Int local1 = MapOffset.GlobalToLocal(globalIndex1);
@@ -20,17 +23,17 @@ namespace Tools
 
         public static void MoveTo(in Vector2Int sourceGlobalIndex, in Vector2Int targetGlobalIndex)
         {
-            if (SparseSandBoxMap2.Instance.Exist(targetGlobalIndex)
-             && SparseSandBoxMap2.Instance.Exist(sourceGlobalIndex))
+            if (cacheSparseSandBoxMap2.Exist(targetGlobalIndex)
+             && cacheSparseSandBoxMap2.Exist(sourceGlobalIndex))
             {
-                var source = SparseSandBoxMap2.Instance[sourceGlobalIndex];
-                var target = SparseSandBoxMap2.Instance[targetGlobalIndex];
-                SparseSandBoxMap2.Instance[targetGlobalIndex] = source;
-                SparseSandBoxMap2.Instance[sourceGlobalIndex] = target;
-                SparseSpriteMap.Instance.ReloadColor(targetGlobalIndex);
-                SparseSpriteMap.Instance.ReloadColor(sourceGlobalIndex);
-                SparseSandBoxMap2.Instance.SetDirty(targetGlobalIndex);
-                SparseSandBoxMap2.Instance.SetDirty(sourceGlobalIndex);
+                var source = cacheSparseSandBoxMap2[sourceGlobalIndex];
+                var target = cacheSparseSandBoxMap2[targetGlobalIndex];
+                cacheSparseSandBoxMap2[targetGlobalIndex] = source;
+                cacheSparseSandBoxMap2[sourceGlobalIndex] = target;
+                cacheSparseSpriteMap.ReloadColor(targetGlobalIndex);
+                cacheSparseSpriteMap.ReloadColor(sourceGlobalIndex);
+                cacheSparseSandBoxMap2.SetDirty(targetGlobalIndex);
+                cacheSparseSandBoxMap2.SetDirty(sourceGlobalIndex);
             }
         }
     }

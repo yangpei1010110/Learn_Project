@@ -9,7 +9,6 @@ namespace SandBox.Physics
 {
     public static class ElementPhysics
     {
-        private static SparseSandBoxMap2 cacheSparseSandBoxMap2 = SparseSandBoxMap2.Instance;
         public enum CollisionType
         {
             Empty = 0,
@@ -18,26 +17,28 @@ namespace SandBox.Physics
             Block = 1 << 2,
         }
 
+        private static SparseSandBoxMap _cacheSparseSandBoxMap = SparseSandBoxMap.Instance;
+
         /// <summary>
         ///     碰撞处在 y 平面或 x 平面
         /// </summary>
         private static CollisionInfo SimpleRegularCollision(in CollisionRegularData collisionData)
         {
-            bool existElement = cacheSparseSandBoxMap2.Exist(collisionData.ElementGlobalIndex);
+            bool existElement = _cacheSparseSandBoxMap.Exist(collisionData.ElementGlobalIndex);
             if (!existElement)
             {
                 return default(CollisionInfo);
             }
 
-            bool existBlock = cacheSparseSandBoxMap2.Exist(collisionData.BlockGlobalIndex);
+            bool existBlock = _cacheSparseSandBoxMap.Exist(collisionData.BlockGlobalIndex);
             if (!existBlock)
             {
                 return default(CollisionInfo);
             }
 
             // test swap
-            IElement element = cacheSparseSandBoxMap2[collisionData.ElementGlobalIndex];
-            IElement block = cacheSparseSandBoxMap2[collisionData.BlockGlobalIndex];
+            IElement element = _cacheSparseSandBoxMap[collisionData.ElementGlobalIndex];
+            IElement block = _cacheSparseSandBoxMap[collisionData.BlockGlobalIndex];
 
             if (element.Type == ElementType.Void)
             {
@@ -56,15 +57,15 @@ namespace SandBox.Physics
 
 
             // test block left or right
-            bool existBlockLeft = cacheSparseSandBoxMap2.Exist(collisionData.BlockLeftGlobalIndex);
-            bool existBlockRight = cacheSparseSandBoxMap2.Exist(collisionData.BlockRightGlobalIndex);
+            bool existBlockLeft = _cacheSparseSandBoxMap.Exist(collisionData.BlockLeftGlobalIndex);
+            bool existBlockRight = _cacheSparseSandBoxMap.Exist(collisionData.BlockRightGlobalIndex);
             bool isBlockLeft = Random.Range(0, 2) == 0;
             if (isBlockLeft)
             {
                 if (existBlockLeft)
                 {
                     // test swap
-                    IElement left = cacheSparseSandBoxMap2[collisionData.BlockLeftGlobalIndex];
+                    IElement left = _cacheSparseSandBoxMap[collisionData.BlockLeftGlobalIndex];
                     if (left.Density < element.Density)
                     {
                         return new CollisionInfo()
@@ -78,7 +79,7 @@ namespace SandBox.Physics
 
                 if (existBlockRight)
                 {
-                    IElement right = cacheSparseSandBoxMap2[collisionData.BlockRightGlobalIndex];
+                    IElement right = _cacheSparseSandBoxMap[collisionData.BlockRightGlobalIndex];
                     if (right.Density < element.Density)
                     {
                         return new CollisionInfo()
@@ -94,7 +95,7 @@ namespace SandBox.Physics
             {
                 if (existBlockRight)
                 {
-                    IElement right = cacheSparseSandBoxMap2[collisionData.BlockRightGlobalIndex];
+                    IElement right = _cacheSparseSandBoxMap[collisionData.BlockRightGlobalIndex];
                     if (right.Density < element.Density)
                     {
                         return new CollisionInfo()
@@ -109,7 +110,7 @@ namespace SandBox.Physics
                 if (existBlockLeft)
                 {
                     // test swap
-                    IElement left = cacheSparseSandBoxMap2[collisionData.BlockLeftGlobalIndex];
+                    IElement left = _cacheSparseSandBoxMap[collisionData.BlockLeftGlobalIndex];
                     if (left.Density < element.Density)
                     {
                         return new CollisionInfo()
@@ -128,15 +129,15 @@ namespace SandBox.Physics
             }
 
             // test element left or right
-            bool existElementLeft = cacheSparseSandBoxMap2.Exist(collisionData.ElementLeftGlobalIndex);
-            bool existElementRight = cacheSparseSandBoxMap2.Exist(collisionData.ElementRightGlobalIndex);
+            bool existElementLeft = _cacheSparseSandBoxMap.Exist(collisionData.ElementLeftGlobalIndex);
+            bool existElementRight = _cacheSparseSandBoxMap.Exist(collisionData.ElementRightGlobalIndex);
             bool isElementLeft = Random.Range(0, 2) == 0;
             if (isElementLeft)
             {
                 if (existElementLeft)
                 {
                     // test swap
-                    IElement left = cacheSparseSandBoxMap2[collisionData.ElementLeftGlobalIndex];
+                    IElement left = _cacheSparseSandBoxMap[collisionData.ElementLeftGlobalIndex];
                     if (left.Density < element.Density)
                     {
                         return new CollisionInfo()
@@ -150,7 +151,7 @@ namespace SandBox.Physics
 
                 if (existElementRight)
                 {
-                    IElement right = cacheSparseSandBoxMap2[collisionData.ElementRightGlobalIndex];
+                    IElement right = _cacheSparseSandBoxMap[collisionData.ElementRightGlobalIndex];
                     if (right.Density < element.Density)
                     {
                         return new CollisionInfo()
@@ -166,7 +167,7 @@ namespace SandBox.Physics
             {
                 if (existElementRight)
                 {
-                    IElement right = cacheSparseSandBoxMap2[collisionData.ElementRightGlobalIndex];
+                    IElement right = _cacheSparseSandBoxMap[collisionData.ElementRightGlobalIndex];
                     if (right.Density < element.Density)
                     {
                         return new CollisionInfo()
@@ -181,7 +182,7 @@ namespace SandBox.Physics
                 if (existElementLeft)
                 {
                     // test swap
-                    IElement left = cacheSparseSandBoxMap2[collisionData.ElementLeftGlobalIndex];
+                    IElement left = _cacheSparseSandBoxMap[collisionData.ElementLeftGlobalIndex];
                     if (left.Density < element.Density)
                     {
                         return new CollisionInfo()
@@ -202,18 +203,18 @@ namespace SandBox.Physics
         /// </summary>
         private static CollisionInfo SimpleDiagonalCollision(in CollisionDiagonalData collisionData)
         {
-            bool existElement = cacheSparseSandBoxMap2.Exist(collisionData.ElementGlobalIndex);
+            bool existElement = _cacheSparseSandBoxMap.Exist(collisionData.ElementGlobalIndex);
             if (!existElement)
             {
                 return default(CollisionInfo);
             }
 
-            bool existBlock = cacheSparseSandBoxMap2.Exist(collisionData.BlockGlobalIndex);
+            bool existBlock = _cacheSparseSandBoxMap.Exist(collisionData.BlockGlobalIndex);
             if (existBlock)
             {
                 // test swap
-                IElement element = cacheSparseSandBoxMap2[collisionData.ElementGlobalIndex];
-                IElement block = cacheSparseSandBoxMap2[collisionData.BlockGlobalIndex];
+                IElement element = _cacheSparseSandBoxMap[collisionData.ElementGlobalIndex];
+                IElement block = _cacheSparseSandBoxMap[collisionData.BlockGlobalIndex];
 
                 if (element.Type == ElementType.Void)
                 {
@@ -231,15 +232,15 @@ namespace SandBox.Physics
                 }
 
                 // test left or right
-                bool existLeft = cacheSparseSandBoxMap2.Exist(collisionData.LeftGlobalIndex);
-                bool existRight = cacheSparseSandBoxMap2.Exist(collisionData.RightGlobalIndex);
+                bool existLeft = _cacheSparseSandBoxMap.Exist(collisionData.LeftGlobalIndex);
+                bool existRight = _cacheSparseSandBoxMap.Exist(collisionData.RightGlobalIndex);
                 bool isLeft = Random.Range(0, 2) == 0;
                 if (isLeft)
                 {
                     if (existLeft)
                     {
                         // test swap
-                        IElement left = cacheSparseSandBoxMap2[collisionData.LeftGlobalIndex];
+                        IElement left = _cacheSparseSandBoxMap[collisionData.LeftGlobalIndex];
                         if (left.Density < element.Density)
                         {
                             return new CollisionInfo()
@@ -253,7 +254,7 @@ namespace SandBox.Physics
 
                     if (existRight)
                     {
-                        IElement right = cacheSparseSandBoxMap2[collisionData.RightGlobalIndex];
+                        IElement right = _cacheSparseSandBoxMap[collisionData.RightGlobalIndex];
                         if (right.Density < element.Density)
                         {
                             return new CollisionInfo()
@@ -269,7 +270,7 @@ namespace SandBox.Physics
                 {
                     if (existRight)
                     {
-                        IElement right = cacheSparseSandBoxMap2[collisionData.RightGlobalIndex];
+                        IElement right = _cacheSparseSandBoxMap[collisionData.RightGlobalIndex];
                         if (right.Density < element.Density)
                         {
                             return new CollisionInfo()
@@ -284,7 +285,7 @@ namespace SandBox.Physics
                     if (existLeft)
                     {
                         // test swap
-                        IElement left = cacheSparseSandBoxMap2[collisionData.LeftGlobalIndex];
+                        IElement left = _cacheSparseSandBoxMap[collisionData.LeftGlobalIndex];
                         if (left.Density < element.Density)
                         {
                             return new CollisionInfo()

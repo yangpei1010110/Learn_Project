@@ -1,49 +1,29 @@
 #nullable enable
 
 using SandBox.Elements;
-using SandBox.Elements.Interface;
-using SandBox.Elements.Void;
-using SandBox.Map.SandBox;
 using UnityEngine;
 
 namespace SandBox.Map
 {
-    public class MapBlock
+    public class MapBlock<T>
     {
-        public MapBlock(in Vector2Int blockIndex) => BlockIndex = blockIndex;
-
-        public IElement this[in Vector2Int localPosition]
+        public MapBlock(in Vector2Int globalIndex)
         {
-            get => MapElements[localPosition.x + localPosition.y * MapSetting.MapLocalSizePerUnit];
-            set
+            BlockIndex = MapOffset.GlobalToBlock(globalIndex);
+            _mapElements = new T[MapSetting.MapLocalSizePerUnit * MapSetting.MapLocalSizePerUnit];
+        }
+
+        public ref T this[in Vector2Int globalIndex]
+        {
+            get
             {
-                MapElements[localPosition.x + localPosition.y * MapSetting.MapLocalSizePerUnit] = value;
-                SetDirtyPoint(localPosition);
+                Vector2Int localIndex = MapOffset.GlobalToLocal(globalIndex);
+                return ref _mapElements[localIndex.x + localIndex.y * MapSetting.MapLocalSizePerUnit];
             }
         }
 
-        public void SetDirtyPoint(in Vector2Int localDirtyPoint)
+        public void UpdateElement(in float deltaTime)
         {
-            int mapLocalSizePerUnit = MapSetting.MapLocalSizePerUnit;
-            int mapDirtyOutRange = MapSetting.MapDirtyOutRange;
-
-            Vector2Int dirtyMin = new(
-                Mathf.Clamp(localDirtyPoint.x - mapDirtyOutRange, 0, mapLocalSizePerUnit - 1),
-                Mathf.Clamp(localDirtyPoint.y - mapDirtyOutRange, 0, mapLocalSizePerUnit - 1));
-            Vector2Int dirtyMax = new(
-                Mathf.Clamp(localDirtyPoint.x + mapDirtyOutRange, 0, mapLocalSizePerUnit - 1),
-                Mathf.Clamp(localDirtyPoint.y + mapDirtyOutRange, 0, mapLocalSizePerUnit - 1));
-
-            _dirtyRectMinX = Mathf.Min(_dirtyRectMinX, dirtyMin.x);
-            _dirtyRectMinY = Mathf.Min(_dirtyRectMinY, dirtyMin.y);
-            _dirtyRectMaxX = Mathf.Max(_dirtyRectMaxX, dirtyMax.x);
-            _dirtyRectMaxY = Mathf.Max(_dirtyRectMaxY, dirtyMax.y);
-        }
-
-        public void UpdateElement()
-        {
-            int mapLocalSizePerUnit = MapSetting.MapLocalSizePerUnit;
-            int mapDirtyOutRange = MapSetting.MapDirtyOutRange;
             int xMin = _dirtyRectMinX;
             int xMax = _dirtyRectMaxX;
             int yMin = _dirtyRectMinY;
@@ -52,74 +32,23 @@ namespace SandBox.Map
             for (int j = yMin; j <= yMax; j++)
             for (int i = xMin; i <= xMax; i++)
             {
-                int localIndex = i + j * mapLocalSizePerUnit;
-                IElement element = MapElements[localIndex];
-                MapBlock mapBlock = this;
-                // bool isChange = ElementSimulation.Run(mapBlock, ref element);
-                // if (isChange)
-                {
-                    // SetDirtyPoint(new Vector2Int(i, j));
-                }
+                Vector2Int globalIndex = MapOffset.LocalToGlobal(BlockIndex, new Vector2Int(i, j));
+                ElementSimulation.Run(globalIndex, deltaTime);
             }
-        }
-
-        private IElement[] Create()
-        {
-            IElement[] elements = new IElement[MapSetting.MapLocalSizePerUnit * MapSetting.MapLocalSizePerUnit];
-            for (int i = 0; i < MapSetting.MapLocalSizePerUnit; i++)
-            {
-                for (int j = 0; j < MapSetting.MapLocalSizePerUnit; j++)
-                {
-                    elements[i + j * MapSetting.MapLocalSizePerUnit] = new Void()
-                    {
-                        Position = new Vector2Int(i, j),
-                    };
-                }
-            }
-
-            {
-                Vector2Int originBlockIndex = BlockIndex + Vector2Int.left + Vector2Int.down;
-                for (int j = 0; j < 3; j++)
-                for (int i = 0; i < 3; i++)
-                {
-                    Vector2Int testBlockIndex = originBlockIndex + new Vector2Int(i, j);
-                    if (SparseSandBoxMap.Instance.ContainKey(testBlockIndex))
-                    {
-                        SparseSandBoxMap.Instance._mapBlocks[testBlockIndex].SetFullDirtyRect();
-                    }
-                }
-            }
-
-            return elements;
-        }
-
-        public void ClearDirtyRect()
-        {
-            _dirtyRectMinX = int.MaxValue;
-            _dirtyRectMinY = int.MaxValue;
-            _dirtyRectMaxX = int.MinValue;
-            _dirtyRectMaxY = int.MinValue;
-        }
-
-        public void SetFullDirtyRect()
-        {
-            int mapLocalSizePerUnit = MapSetting.MapLocalSizePerUnit;
-            SetDirtyPoint(new Vector2Int(0, 0));
-            SetDirtyPoint(new Vector2Int(mapLocalSizePerUnit - 1, mapLocalSizePerUnit - 1));
         }
 
         #region MapBlockNeighborCache
 
-        private MapBlock? _upBlock;
-        private MapBlock? _downBlock;
-        private MapBlock? _leftBlock;
-        private MapBlock? _rightBlock;
-        private MapBlock? _upLeftBlock;
-        private MapBlock? _upRightBlock;
-        private MapBlock? _downLeftBlock;
-        private MapBlock? _downRightBlock;
+        private MapBlock<T>? _upBlock;
+        private MapBlock<T>? _downBlock;
+        private MapBlock<T>? _leftBlock;
+        private MapBlock<T>? _rightBlock;
+        private MapBlock<T>? _upLeftBlock;
+        private MapBlock<T>? _upRightBlock;
+        private MapBlock<T>? _downLeftBlock;
+        private MapBlock<T>? _downRightBlock;
 
-        public void InsertMapBlockCache(in MapBlock newMapBlock)
+        public void InsertMapBlockCache(in MapBlock<T> newMapBlock)
         {
             Vector2Int indexOffset = newMapBlock.BlockIndex - BlockIndex;
             switch (indexOffset.x)
@@ -173,9 +102,8 @@ namespace SandBox.Map
 
         #region Data
 
-        private IElement[]? _mapElements;
-        public  IElement[]  MapElements => _mapElements ??= Create();
-        public  Vector2Int  BlockIndex;
+        public readonly T[]        _mapElements;
+        public readonly Vector2Int BlockIndex;
 
         #endregion
 
@@ -185,6 +113,38 @@ namespace SandBox.Map
         public int _dirtyRectMinY = int.MaxValue;
         public int _dirtyRectMaxX = int.MinValue;
         public int _dirtyRectMaxY = int.MinValue;
+
+
+        public void SetDirtyPoint(in Vector2Int dirtyGlobalIndex)
+        {
+            Vector2Int dirtyLocalIndex = MapOffset.GlobalToLocal(dirtyGlobalIndex);
+
+            int dirtyMinX = Mathf.Clamp(dirtyLocalIndex.x - MapSetting.MapDirtyOutRange, 0, MapSetting.MapLocalSizePerUnit - 1);
+            int dirtyMinY = Mathf.Clamp(dirtyLocalIndex.y - MapSetting.MapDirtyOutRange, 0, MapSetting.MapLocalSizePerUnit - 1);
+            int dirtyMaxX = Mathf.Clamp(dirtyLocalIndex.x + MapSetting.MapDirtyOutRange, 0, MapSetting.MapLocalSizePerUnit - 1);
+            int dirtyMaxY = Mathf.Clamp(dirtyLocalIndex.y + MapSetting.MapDirtyOutRange, 0, MapSetting.MapLocalSizePerUnit - 1);
+
+            _dirtyRectMinX = Mathf.Min(_dirtyRectMinX, dirtyMinX);
+            _dirtyRectMinY = Mathf.Min(_dirtyRectMinY, dirtyMinY);
+            _dirtyRectMaxX = Mathf.Max(_dirtyRectMaxX, dirtyMaxX);
+            _dirtyRectMaxY = Mathf.Max(_dirtyRectMaxY, dirtyMaxY);
+        }
+
+        public void ClearDirtyRect()
+        {
+            _dirtyRectMinX = int.MaxValue;
+            _dirtyRectMinY = int.MaxValue;
+            _dirtyRectMaxX = int.MinValue;
+            _dirtyRectMaxY = int.MinValue;
+        }
+
+        public void SetFullDirtyRect()
+        {
+            _dirtyRectMinX = 0;
+            _dirtyRectMinY = 0;
+            _dirtyRectMaxX = MapSetting.MapLocalSizePerUnit - 1;
+            _dirtyRectMaxY = MapSetting.MapLocalSizePerUnit - 1;
+        }
 
         #endregion
     }

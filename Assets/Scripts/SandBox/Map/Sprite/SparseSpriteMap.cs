@@ -10,13 +10,7 @@ namespace SandBox.Map.Sprite
 {
     public class SparseSpriteMap
     {
-        private static SparseSandBoxMap2 cacheSparseSandBoxMap2 = SparseSandBoxMap2.Instance;
-        public void ReloadColor(in Vector2Int globalIndex)
-        {
-            Vector2Int localIndex = MapOffset.GlobalToLocal(globalIndex);
-            GetOrNewBlock(globalIndex).SetPixel(localIndex.x, localIndex.y, cacheSparseSandBoxMap2[globalIndex].Color);
-            _dirtyBlocks.Add(MapOffset.GlobalToBlock(globalIndex));
-        }
+        private static SparseSandBoxMap _cacheSparseSandBoxMap = SparseSandBoxMap.Instance;
 
         /// <summary>
         ///     获取或设置颜色
@@ -36,6 +30,13 @@ namespace SandBox.Map.Sprite
                 texture.SetPixel(localIndex.x, localIndex.y, value);
                 _dirtyBlocks.Add(MapOffset.GlobalToBlock(globalIndex));
             }
+        }
+
+        public void ReloadColor(in Vector2Int globalIndex)
+        {
+            Vector2Int localIndex = MapOffset.GlobalToLocal(globalIndex);
+            GetOrNewBlock(globalIndex).SetPixel(localIndex.x, localIndex.y, _cacheSparseSandBoxMap[globalIndex].Color);
+            _dirtyBlocks.Add(MapOffset.GlobalToBlock(globalIndex));
         }
 
         public void SafeSet(in Vector2Int globalIndex, in Color color)
@@ -134,7 +135,7 @@ namespace SandBox.Map.Sprite
             {
                 // TODO update MapBlock to MapBlock2
                 // MapBlock? mapBlock = SparseSandBoxMap.Instance._mapBlocks[blockIndex];
-                MapBlock2<IElement> mapBlock = SparseSandBoxMap2.Instance._mapBlocks[blockIndex];
+                MapBlock<IElement> mapBlock = SparseSandBoxMap.Instance._mapBlocks[blockIndex];
                 for (int y = 0; y < MapSetting.MapLocalSizePerUnit; y++)
                 for (int x = 0; x < MapSetting.MapLocalSizePerUnit; x++)
                 {

@@ -29,8 +29,8 @@ namespace Tools
                 return;
             }
 
-            var xStep = offset.x >= 0 ? 1 : -1;
-            var yStep = offset.y >= 0 ? 1 : -1;
+            int xStep = offset.x >= 0 ? 1 : -1;
+            int yStep = offset.y >= 0 ? 1 : -1;
             if (offset.x == 0)
             {
                 // y step
@@ -62,13 +62,13 @@ namespace Tools
             else
             {
                 // normal step
-                var absY = math.abs(offset.y);
-                var absX = math.abs(offset.x);
+                int absY = math.abs(offset.y);
+                int absX = math.abs(offset.x);
 
                 if (absY == absX)
                 {
                     // 45 degree
-                    var step = new Vector2Int(xStep, yStep);
+                    Vector2Int step = new Vector2Int(xStep, yStep);
                     while (temp != offset)
                     {
                         temp += step;
@@ -81,7 +81,7 @@ namespace Tools
                     return;
                 }
 
-                var slope = offset.y / (float)offset.x;
+                float slope = offset.y / (float)offset.x;
                 if (absY > absX)
                 {
                     // y longer

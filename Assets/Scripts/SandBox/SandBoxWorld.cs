@@ -16,8 +16,8 @@ namespace SandBox
 {
     public class SandBoxWorld : MonoBehaviour
     {
-        private static SparseSandBoxMap2 cacheSparseSandBoxMap2 = SparseSandBoxMap2.Instance;
-        private static SparseSpriteMap   cacheSparseSpriteMap   = SparseSpriteMap.Instance;
+        private static SparseSandBoxMap _cacheSparseSandBoxMap = SparseSandBoxMap.Instance;
+        private static SparseSpriteMap  cacheSparseSpriteMap   = SparseSpriteMap.Instance;
 
         private void Update()
         {
@@ -31,7 +31,7 @@ namespace SandBox
         {
             // draw dirty rect
             Gizmos.color = Color.red;
-            foreach (MapBlock2<IElement> block in cacheSparseSandBoxMap2._mapBlocks.Values)
+            foreach (MapBlock<IElement> block in _cacheSparseSandBoxMap._mapBlocks.Values)
             {
                 Vector2Int minRect = new(block._dirtyRectMinX, block._dirtyRectMinY);
                 Vector2Int maxRect = new(block._dirtyRectMaxX, block._dirtyRectMaxY);
@@ -80,10 +80,10 @@ namespace SandBox
                     {
                         if (y * y + x * x <= mouseCircleRadius * mouseCircleRadius)
                         {
-                            var elementGlobalIndex = mouseGlobalIndex + new Vector2Int(x, y);
+                            Vector2Int elementGlobalIndex = mouseGlobalIndex + new Vector2Int(x, y);
                             IElement element = new Sand();
-                            cacheSparseSandBoxMap2[elementGlobalIndex] = element;
-                            cacheSparseSandBoxMap2.SetDirty(elementGlobalIndex);
+                            _cacheSparseSandBoxMap[elementGlobalIndex] = element;
+                            _cacheSparseSandBoxMap.SetDirty(elementGlobalIndex);
                             cacheSparseSpriteMap[elementGlobalIndex] = element.Color;
                         }
                     }
@@ -97,10 +97,10 @@ namespace SandBox
                     {
                         if (y * y + x * x <= mouseCircleRadius * mouseCircleRadius)
                         {
-                            var elementGlobalIndex = mouseGlobalIndex + new Vector2Int(x, y);
+                            Vector2Int elementGlobalIndex = mouseGlobalIndex + new Vector2Int(x, y);
                             IElement element = new Water();
-                            cacheSparseSandBoxMap2[elementGlobalIndex] = element;
-                            cacheSparseSandBoxMap2.SetDirty(elementGlobalIndex);
+                            _cacheSparseSandBoxMap[elementGlobalIndex] = element;
+                            _cacheSparseSandBoxMap.SetDirty(elementGlobalIndex);
                             cacheSparseSpriteMap[elementGlobalIndex] = element.Color;
                         }
                     }
@@ -128,7 +128,7 @@ namespace SandBox
 
         private void UpdateParticle(in float deltaTime)
         {
-            cacheSparseSandBoxMap2.UpdateParticle(deltaTime);
+            _cacheSparseSandBoxMap.UpdateParticle(deltaTime);
             cacheSparseSpriteMap.Flush();
         }
 
@@ -161,8 +161,8 @@ namespace SandBox
 
         private void UpdateLine(in Vector2Int mouseGlobalIndex)
         {
-            var maxCount = 100;
-            var count = 0;
+            int maxCount = 100;
+            int count = 0;
             LineTool2D.LineCast2(Vector2Int.zero, mouseGlobalIndex, pixel =>
             {
                 count += 1;

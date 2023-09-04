@@ -1,7 +1,6 @@
 #nullable enable
 
 using SandBox.Elements.Interface;
-using SandBox.Map.SandBox;
 using UnityEngine;
 
 namespace SandBox.Elements.Void
@@ -17,16 +16,8 @@ namespace SandBox.Elements.Void
         public Vector2     Velocity       { get; set; }
         public Vector2     PositionOffset { get; set; }
 
-        public void UpdateElement(ref IElement element, Vector2Int globalPosition)
+        public void StatusUpdate(in Vector2Int globalIndex)
         {
-            if (Step == SparseSandBoxMap.Instance.Step)
-            {
-                return;
-            }
-            else
-            {
-                Step = SparseSandBoxMap.Instance.Step;
-            }
         }
     }
 }

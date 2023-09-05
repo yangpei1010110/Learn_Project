@@ -137,22 +137,28 @@ namespace SandBox
                 cacheSparseSpriteMap.UpdateColorFormMapBlock(blockIndex);
             }
 
-            CircleTool2D.DrawCircle(mouseGlobalIndex, mouseCircleRadius, pixel =>
+            Circle2D.DrawCircle(mouseGlobalIndex, mouseCircleRadius, pixel =>
             {
                 cacheSparseSpriteMap.SafeSet(pixel, Color.white);
                 lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(pixel));
             });
         }
 
+        #region UpdateLine
+
+        private Vector2Int[] UpdateLineResults = new Vector2Int[256];
+
         private void UpdateLine(in Vector2Int mouseGlobalIndex)
         {
-            LineTool2D.LineCast2(Vector2Int.zero, mouseGlobalIndex, pixel =>
+            int resultCount = Line2D.LineCastNonAlloc(Vector2Int.zero, mouseGlobalIndex, ref UpdateLineResults);
+            for (int i = 0; i < resultCount; i++)
             {
-                cacheSparseSpriteMap.SafeSet(pixel, Color.red);
-                lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(pixel));
-                return true;
-            });
+                cacheSparseSpriteMap.SafeSet(UpdateLineResults[i], Color.red * (i / (float)resultCount));
+                lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(UpdateLineResults[i]));
+            }
         }
+
+        #endregion
 
         #endregion
     }

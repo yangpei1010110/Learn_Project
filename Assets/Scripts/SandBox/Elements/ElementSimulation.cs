@@ -36,6 +36,8 @@ namespace SandBox.Elements
             _cacheSparseSandBoxMap[globalIndex] = element;
         }
 
+        private static Vector2Int[] LineCastResults = new Vector2Int[128];
+
         private static void UpdateByCollision(Vector2Int globalIndex, in float deltaTime)
         {
             IElement element = _cacheSparseSandBoxMap[globalIndex];
@@ -57,15 +59,15 @@ namespace SandBox.Elements
             Vector2Int? elementGlobalIndex = globalIndex;
             if (globalIndex != nextGlobalIndex)
             {
-                int step = 0;
-                LineTool2D.LineCast2(globalIndex, nextGlobalIndex, stepGlobalIndex =>
+                var resultCount = Line2D.LineCastNonAlloc(globalIndex, nextGlobalIndex, ref LineCastResults);
+                for (int i = 0; i < resultCount; i++)
                 {
-                    step += 1;
-                    if (step >= ElementPhysicsSetting.maxStepDistance)
+                    if (i >= ElementPhysicsSetting.maxStepDistance)
                     {
-                        return false;
+                        break;
                     }
 
+                    var stepGlobalIndex = LineCastResults[i];
                     ElementPhysics.CollisionInfo collisionData = ElementPhysics.SimpleCollision(elementGlobalIndex.Value, stepGlobalIndex);
                     if (collisionData.Type == ElementPhysics.CollisionType.Swap
                      || collisionData.Type == ElementPhysics.CollisionType.Slip)
@@ -86,11 +88,36 @@ namespace SandBox.Elements
                     else if (collisionData.Type == ElementPhysics.CollisionType.Block)
                     {
                         _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity = Vector2.zero;
-                        return false;
+                        break;
                     }
-
-                    return true;
-                });
+                }
+                // Line2D.LineCast2(globalIndex, nextGlobalIndex, stepGlobalIndex =>
+                // {
+                //     ElementPhysics.CollisionInfo collisionData = ElementPhysics.SimpleCollision(elementGlobalIndex.Value, stepGlobalIndex);
+                //     if (collisionData.Type == ElementPhysics.CollisionType.Swap
+                //      || collisionData.Type == ElementPhysics.CollisionType.Slip)
+                //     {
+                //         // is move
+                //         SandBoxTool.MoveTo(elementGlobalIndex.Value, collisionData.NextGlobalIndex);
+                //         elementGlobalIndex = collisionData.NextGlobalIndex;
+                //
+                //         if (collisionData.Type == ElementPhysics.CollisionType.Swap)
+                //         {
+                //             _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.VelocityDamping;
+                //         }
+                //         else if (collisionData.Type == ElementPhysics.CollisionType.Slip)
+                //         {
+                //             _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.CollisionDamping;
+                //         }
+                //     }
+                //     else if (collisionData.Type == ElementPhysics.CollisionType.Block)
+                //     {
+                //         _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity = Vector2.zero;
+                //         return false;
+                //     }
+                //
+                //     return true;
+                // });
             }
 
 

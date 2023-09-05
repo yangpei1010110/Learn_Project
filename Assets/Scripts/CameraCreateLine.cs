@@ -7,9 +7,9 @@ using Debug = UnityEngine.Debug;
 
 public class CameraCreateLine : MonoBehaviour
 {
-    public List<LineTool2D.Line> Lines        = new();
+    public List<Line2D.Line> Lines        = new();
     public bool                  isFirstPoint = true;
-    public LineTool2D.Line?      Temp;
+    public Line2D.Line?      Temp;
 
     private void Update()
     {
@@ -18,13 +18,13 @@ public class CameraCreateLine : MonoBehaviour
         {
             if (isFirstPoint)
             {
-                Temp = new LineTool2D.Line { top = main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward * (main.nearClipPlane * 10)), };
+                Temp = new Line2D.Line { top = main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward * (main.nearClipPlane * 10)), };
 
                 isFirstPoint = false;
             }
             else
             {
-                Temp = new LineTool2D.Line { top = Temp.Value.top, bottom = main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward * (main.nearClipPlane * 10)), };
+                Temp = new Line2D.Line { top = Temp.Value.top, bottom = main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward * (main.nearClipPlane * 10)), };
                 Lines.Add(Temp.Value);
                 Temp = null;
                 isFirstPoint = true;
@@ -35,7 +35,7 @@ public class CameraCreateLine : MonoBehaviour
         {
             Vector3 point1 = main.ScreenToWorldPoint(new Vector3(Random.Range(0, Screen.width), Random.Range(0, Screen.height), 0) + Vector3.forward * (main.nearClipPlane * 10));
             Vector3 point2 = main.ScreenToWorldPoint(new Vector3(Random.Range(0, Screen.width), Random.Range(0, Screen.height), 0) + Vector3.forward * (main.nearClipPlane * 10));
-            LineTool2D.Line line = new() { top = point1, bottom = point2, };
+            Line2D.Line line = new() { top = point1, bottom = point2, };
             Lines.Add(line);
         }
 
@@ -43,9 +43,9 @@ public class CameraCreateLine : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.D))
         {
             Vector2 center = (Vector2)main.ScreenToWorldPoint(new Vector3(Screen.width / 2f, Screen.height / 2f, 0) + Vector3.forward * (main.nearClipPlane * 10));
-            LineTool2D.Line debugLine1 = new() { top = center + new Vector2(0f, 1f), bottom = center + new Vector2(0f, -1f), };
-            LineTool2D.Line debugLine2 = new() { top = center + new Vector2(0.5f, 0.7f), bottom = center + new Vector2(0.5f, -1.3f), };
-            LineTool2D.Line debugLine3 = new() { top = center + new Vector2(-1f, 0.6f), bottom = center + new Vector2(1f, -1.2f), };
+            Line2D.Line debugLine1 = new() { top = center + new Vector2(0f, 1f), bottom = center + new Vector2(0f, -1f), };
+            Line2D.Line debugLine2 = new() { top = center + new Vector2(0.5f, 0.7f), bottom = center + new Vector2(0.5f, -1.3f), };
+            Line2D.Line debugLine3 = new() { top = center + new Vector2(-1f, 0.6f), bottom = center + new Vector2(1f, -1.2f), };
 
             Lines.Add(debugLine1);
             Lines.Add(debugLine2);
@@ -68,13 +68,13 @@ public class CameraCreateLine : MonoBehaviour
             Gizmos.DrawLine((Vector3)Temp.Value.top + zV, main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward * (main.nearClipPlane * 10)));
         }
 
-        foreach (LineTool2D.Line line in Lines)
+        foreach (Line2D.Line line in Lines)
         {
             Gizmos.color = Color.red;
             Gizmos.DrawLine((Vector3)line.top + zV, (Vector3)line.bottom + zV);
         }
 
-        LineTool2D.Line[] linesArray = Lines.ToArray();
+        Line2D.Line[] linesArray = Lines.ToArray();
         // var li2d = new LineIntersect2D();
         // li2d.SortedArrayByPointY(ref linesArray, mousePos - new Vector3(0, float.Epsilon * 100f,0));
         // for (int i = 0; i < linesArray.Length; i++)

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Tools
 {
-    public static class CircleTool2D
+    public static class Circle2D
     {
         /// <summary>
         ///     绘制空心圆形

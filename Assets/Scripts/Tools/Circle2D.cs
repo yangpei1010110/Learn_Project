@@ -88,7 +88,7 @@ namespace Tools
 
         private static void DrawMirrorPointNonAlloc(in Vector2Int center, in Vector2Int offset, ref Vector2Int[] results, ref int startIndex)
         {
-            if (results.Length > startIndex + 4)
+            if (results.Length >= startIndex + 4)
             {
                 results[startIndex++] = center + new Vector2Int(offset.x, offset.y);
                 results[startIndex++] = center + new Vector2Int(-offset.x, offset.y);
@@ -99,7 +99,7 @@ namespace Tools
 
         private static void Draw4PointNonAlloc(in Vector2Int center, int radius, ref Vector2Int[] results, ref int startIndex)
         {
-            if (results.Length > startIndex + 4)
+            if (results.Length >= startIndex + 4)
             {
                 results[startIndex++] = new Vector2Int(center.x - radius, center.y);
                 results[startIndex++] = new Vector2Int(center.x + radius, center.y);

@@ -1,9 +1,6 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Tools
@@ -25,7 +22,7 @@ namespace Tools
             int y0 = p0.y;
             int y1 = p1.y;
 
-            var offset = p1 - p0;
+            Vector2Int offset = p1 - p0;
             bool steep = math.abs(y1 - y0) > math.abs(x1 - x0);
             if (steep)
             {
@@ -53,14 +50,15 @@ namespace Tools
                 {
                     results[resultCount].x = y;
                     results[resultCount].y = x;
+                    resultCount++;
                 }
                 else
                 {
                     results[resultCount].x = x;
                     results[resultCount].y = y;
+                    resultCount++;
                 }
 
-                resultCount++;
                 if (resultCount >= resultMaxLength)
                 {
                     if ((offset.x <= 0 && offset.y <= 0)

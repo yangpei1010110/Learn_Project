@@ -29,7 +29,7 @@ namespace SandBox.Map.SandBox
 
         private MapBlock<IElement> CreateBlock(in Vector2Int globalIndex)
         {
-            MapBlock<IElement> block = new MapBlock<IElement>(globalIndex);
+            MapBlock<IElement> block = new(globalIndex);
             for (int i = 0; i < MapSetting.MapLocalSizePerUnit; i++)
             for (int j = 0; j < MapSetting.MapLocalSizePerUnit; j++)
             {

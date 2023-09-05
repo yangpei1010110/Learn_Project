@@ -15,6 +15,8 @@ namespace SandBox.Elements
     {
         private static SparseSandBoxMap _cacheSparseSandBoxMap = SparseSandBoxMap.Instance;
 
+        private static Vector2Int[] LineCastResults = new Vector2Int[128];
+
         private static void UpdateVelocity(in Vector2Int globalIndex, in float deltaTime)
         {
             IElement element = _cacheSparseSandBoxMap[globalIndex];
@@ -35,8 +37,6 @@ namespace SandBox.Elements
 
             _cacheSparseSandBoxMap[globalIndex] = element;
         }
-
-        private static Vector2Int[] LineCastResults = new Vector2Int[128];
 
         private static void UpdateByCollision(Vector2Int globalIndex, in float deltaTime)
         {
@@ -59,7 +59,7 @@ namespace SandBox.Elements
             Vector2Int? elementGlobalIndex = globalIndex;
             if (globalIndex != nextGlobalIndex)
             {
-                var resultCount = Line2D.LineCastNonAlloc(globalIndex, nextGlobalIndex, ref LineCastResults);
+                int resultCount = Line2D.LineCastNonAlloc(globalIndex, nextGlobalIndex, ref LineCastResults);
                 for (int i = 0; i < resultCount; i++)
                 {
                     if (i >= ElementPhysicsSetting.maxStepDistance)
@@ -67,7 +67,7 @@ namespace SandBox.Elements
                         break;
                     }
 
-                    var stepGlobalIndex = LineCastResults[i];
+                    Vector2Int stepGlobalIndex = LineCastResults[i];
                     ElementPhysics.CollisionInfo collisionData = ElementPhysics.SimpleCollision(elementGlobalIndex.Value, stepGlobalIndex);
                     if (collisionData.Type == ElementPhysics.CollisionType.Swap
                      || collisionData.Type == ElementPhysics.CollisionType.Slip)

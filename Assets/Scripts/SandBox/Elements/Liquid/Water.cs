@@ -7,7 +7,7 @@ namespace SandBox.Elements.Liquid
 {
     public struct Water : IElement
     {
-        public bool IsStatic => false;
+        public bool        IsStatic       => false;
         public float       Life           { get; set; }
         public long        Step           { get; set; }
         public Vector2Int  Position       { get; set; }

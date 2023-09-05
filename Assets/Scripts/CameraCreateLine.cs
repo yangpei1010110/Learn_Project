@@ -8,7 +8,7 @@ using Debug = UnityEngine.Debug;
 public class CameraCreateLine : MonoBehaviour
 {
     public List<Line2D.Line> Lines        = new();
-    public bool                  isFirstPoint = true;
+    public bool              isFirstPoint = true;
     public Line2D.Line?      Temp;
 
     private void Update()

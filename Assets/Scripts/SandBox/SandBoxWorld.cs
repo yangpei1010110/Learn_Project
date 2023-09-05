@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 using SandBox.Elements.Interface;
-using SandBox.Elements.Liquid;
-using SandBox.Elements.Solid;
 using SandBox.Map;
 using SandBox.Map.SandBox;
 using SandBox.Map.Sprite;
@@ -73,9 +71,9 @@ namespace SandBox
             {
                 if (Input.GetMouseButton(0) && Selected != null && Selected.GetInterface(nameof(IElement)) != null)
                 {
-                    var eventData = new PointerEventData(EventSystem.current);
+                    PointerEventData eventData = new(EventSystem.current);
                     eventData.position = Input.mousePosition;
-                    var results = new List<RaycastResult>();
+                    List<RaycastResult> results = new();
                     EventSystem.current.RaycastAll(eventData, results);
                     if (results.Count == 0)
                     {
@@ -124,29 +122,42 @@ namespace SandBox
 
         #region 鼠标范围显示
 
-        private float               mouseCircleRadiusY    = 1f;
-        private int                 mouseCircleRadius     = 1;
-        private int                 maxMouseCircleRadius  = 100;
+        private float mouseCircleRadiusY   = 1f;
+        private int   mouseCircleRadius    = 1;
+        private int   maxMouseCircleRadius = 100;
+
+        #region lastUpdateSprite
+
         private HashSet<Vector2Int> lastUpdateSpriteIndex = new();
+
+        #endregion
+
+        #region UpdateCircleSprite
+
+        private Vector2Int[] UpdateCircleSpriteResults = new Vector2Int[1024];
 
         private void UpdateCircleSprite(in Vector2Int mouseGlobalIndex)
         {
             // 更新最后一帧的区块
-            foreach (Vector2Int blockIndex in lastUpdateSpriteIndex)
+            foreach (Vector2Int block in lastUpdateSpriteIndex)
             {
-                cacheSparseSpriteMap.UpdateColorFormMapBlock(blockIndex);
+                cacheSparseSpriteMap.UpdateColorFormMapBlock(block);
             }
 
-            Circle2D.DrawCircle(mouseGlobalIndex, mouseCircleRadius, pixel =>
+            int resultCount = Circle2D.DrawCircleNonAlloc(mouseGlobalIndex, mouseCircleRadius, ref UpdateCircleSpriteResults);
+            for (int i = 0; i < resultCount; i++)
             {
+                Vector2Int pixel = UpdateCircleSpriteResults[i];
                 cacheSparseSpriteMap.SafeSet(pixel, Color.white);
                 lastUpdateSpriteIndex.Add(MapOffset.GlobalToBlock(pixel));
-            });
+            }
         }
+
+        #endregion
 
         #region UpdateLine
 
-        private Vector2Int[] UpdateLineResults = new Vector2Int[256];
+        private Vector2Int[] UpdateLineResults = new Vector2Int[1024];
 
         private void UpdateLine(in Vector2Int mouseGlobalIndex)
         {

@@ -8,9 +8,9 @@ using UnityEngine;
 
 public class LineIntersect2D
 {
-    private static int                                           lastCount             = 0;
+    private static int                                       lastCount             = 0;
     private        Dictionary<Vector2, HashSet<Line2D.Line>> _centerPointCache     = new();
-    private        SortedList<Vector2, Vector2>                  _lineSortedEventCache = new(new EventComparer());
+    private        SortedList<Vector2, Vector2>              _lineSortedEventCache = new(new EventComparer());
     private        List<Line2D.Line>                         _lineSweepCache       = new();
     private        Dictionary<Vector2, HashSet<Line2D.Line>> _lowerPointCache      = new();
 
@@ -380,7 +380,7 @@ public class LineIntersect2D
     [Serializable]
     public struct IntersectEvent
     {
-        public Vector2               point;
+        public Vector2           point;
         public List<Line2D.Line> lines;
     }
 }

@@ -50,7 +50,7 @@ namespace SandBox.Elements
             Vector2Int nextGlobalIndex = MapOffset.GlobalRound(nextWorldPosition);
             Vector2 offset = nextWorldPosition - nextGlobalIndex;
             element.PositionOffset = offset;
-            
+
             Vector2Int? elementGlobalIndex = globalIndex;
             if (globalIndex != nextGlobalIndex)
             {
@@ -73,66 +73,97 @@ namespace SandBox.Elements
 
                         if (collisionData.Type == ElementPhysics.CollisionType.Swap)
                         {
-                            _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.VelocityDamping;
+                            // _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.VelocityDamping;
                         }
                         else if (collisionData.Type == ElementPhysics.CollisionType.Slip)
                         {
-                            _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.CollisionDamping;
+                            // _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.CollisionDamping;
                         }
                     }
                     else if (collisionData.Type == ElementPhysics.CollisionType.Block)
                     {
-                        _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity = Vector2.zero;
+                        _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.CollisionDamping;
                         break;
                     }
+                    // else if (collisionData.Type == ElementPhysics.CollisionType.Empty)
+                    // {
+                    //     _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity *= 0.5f;
+                    //     break;
+                    // }
                 }
-                // Line2D.LineCast2(globalIndex, nextGlobalIndex, stepGlobalIndex =>
-                // {
-                //     ElementPhysics.CollisionInfo collisionData = ElementPhysics.SimpleCollision(elementGlobalIndex.Value, stepGlobalIndex);
-                //     if (collisionData.Type == ElementPhysics.CollisionType.Swap
-                //      || collisionData.Type == ElementPhysics.CollisionType.Slip)
-                //     {
-                //         // is move
-                //         SandBoxTool.MoveTo(elementGlobalIndex.Value, collisionData.NextGlobalIndex);
-                //         elementGlobalIndex = collisionData.NextGlobalIndex;
-                //
-                //         if (collisionData.Type == ElementPhysics.CollisionType.Swap)
-                //         {
-                //             _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.VelocityDamping;
-                //         }
-                //         else if (collisionData.Type == ElementPhysics.CollisionType.Slip)
-                //         {
-                //             _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity *= ElementPhysicsSetting.CollisionDamping;
-                //         }
-                //     }
-                //     else if (collisionData.Type == ElementPhysics.CollisionType.Block)
-                //     {
-                //         _cacheSparseSandBoxMap[elementGlobalIndex.Value].Velocity = Vector2.zero;
-                //         return false;
-                //     }
-                //
-                //     return true;
-                // });
             }
 
 
             // dirty check
-            IElement nextElement = _cacheSparseSandBoxMap[elementGlobalIndex.Value];
-            // edge detect
-            if (!_cacheSparseSandBoxMap.Exist(elementGlobalIndex.Value + Vector2Int.up)
-             || !_cacheSparseSandBoxMap.Exist(elementGlobalIndex.Value + Vector2Int.down)
-             || !_cacheSparseSandBoxMap.Exist(elementGlobalIndex.Value + Vector2Int.left)
-             || !_cacheSparseSandBoxMap.Exist(elementGlobalIndex.Value + Vector2Int.right))
+            var nextValueIndex = elementGlobalIndex.Value;
+            IElement nextElement = _cacheSparseSandBoxMap[nextValueIndex];
+            nextElement.Velocity *= ElementPhysicsSetting.VelocityDamping;
+
+            if (nextValueIndex == globalIndex)
             {
-                // on edge
-                nextElement.Velocity = Vector2.zero;
+                nextElement.StableStep += 1;
+            }
+            else
+            {
+                nextElement.StableStep = math.max(0, nextElement.StableStep - 100);
+            }
+
+            // // edge detect
+            // var up = nextValueIndex + Vector2Int.up;
+            // var down = nextValueIndex + Vector2Int.down;
+            // var left = nextValueIndex + Vector2Int.left;
+            // var right = nextValueIndex + Vector2Int.right;
+            // if ((!_cacheSparseSandBoxMap.Exist(up))
+            //  || (!_cacheSparseSandBoxMap.Exist(down))
+            //  || (!_cacheSparseSandBoxMap.Exist(left))
+            //  || (!_cacheSparseSandBoxMap.Exist(right)))
+            // {
+            //     // on edge
+            //     nextElement.Velocity *= 0.001f;
+            // }
+
+            // else if (nextElement.Velocity.sqrMagnitude > MapSetting.GravityForce.sqrMagnitude)
+            // {
+            //     nextElement.StableStep = math.max(0, nextElement.StableStep - 10);
+            // }
+
+            // if (elementGlobalIndex.Value == nextGlobalIndex)
+            // {
+            //     nextElement.StableStep += 1;
+            // }
+            // else
+            // {
+            //     nextElement.StableStep = 0;
+            // }
+
+
+            if (nextElement.StableStep < ElementPhysicsSetting.StableStepSleep)
+            {
+                _cacheSparseSandBoxMap.SetDirty(nextValueIndex);
+            }
+            else if (nextElement.Type != ElementType.Solid && nextElement.StableStep < ElementPhysicsSetting.StableStepSleep * 2)
+            {
+                _cacheSparseSandBoxMap.SetDirty(nextValueIndex);
+            }
+            
+            if (nextElement.Type == ElementType.Void)
+            {
+                nextElement.StableStep = ElementPhysicsSetting.StableStepSleep;
+            }
+            else if (nextElement.Type == ElementType.Solid)
+            {
+                nextElement.StableStep = math.clamp(nextElement.StableStep, 0, ElementPhysicsSetting.StableStepSleep);
+            }
+            else
+            {
+                nextElement.StableStep = math.clamp(nextElement.StableStep, 0, ElementPhysicsSetting.StableStepSleep * 2);
             }
 
             // nextElement.Velocity *= ElementPhysicsSetting.VelocityDamping;
-            if (nextElement.Velocity.sqrMagnitude > 0.1f)
-            {
-                _cacheSparseSandBoxMap.SetDirty(elementGlobalIndex.Value);
-            }
+            // if (nextElement.Velocity.sqrMagnitude > 0.1f)
+            // {
+            //     _cacheSparseSandBoxMap.SetDirty(elementGlobalIndex.Value);
+            // }
         }
 
         public static bool Run(in Vector2Int globalIndex, in float deltaTime)

@@ -14,6 +14,7 @@ namespace SandBox.Elements.Gas
         public ElementType Type           => ElementType.Gas;
         public Vector2     Velocity       { get; set; }
         public Vector2     PositionOffset { get; set; }
+        public int StableStep { get; set; }
 
         public void StatusUpdate(in Vector2Int globalIndex)
         {

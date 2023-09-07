@@ -125,7 +125,12 @@ namespace SandBox.Physics
 
             if (element.Type == ElementType.Solid)
             {
-                return default(CollisionInfo);
+                return new CollisionInfo()
+                {
+                    IsCollision = true,
+                    Type = CollisionType.Block,
+                    NextGlobalIndex = collisionData.ElementGlobalIndex,
+                };
             }
 
             // test element left or right
@@ -195,7 +200,12 @@ namespace SandBox.Physics
                 }
             }
 
-            return default(CollisionInfo);
+            return new CollisionInfo()
+            {
+                IsCollision = true,
+                Type = CollisionType.Block,
+                NextGlobalIndex = collisionData.ElementGlobalIndex,
+            };
         }
 
         /// <summary>
@@ -265,6 +275,7 @@ namespace SandBox.Physics
                             };
                         }
                     }
+
                 }
                 else
                 {
@@ -299,7 +310,12 @@ namespace SandBox.Physics
                 }
             }
 
-            return default(CollisionInfo);
+            return new CollisionInfo()
+            {
+                IsCollision = true,
+                Type = CollisionType.Block,
+                NextGlobalIndex = collisionData.ElementGlobalIndex,
+            };
         }
 
         /// <summary>

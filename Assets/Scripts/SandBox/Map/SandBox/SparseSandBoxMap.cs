@@ -33,7 +33,7 @@ namespace SandBox.Map.SandBox
             for (int i = 0; i < MapSetting.MapLocalSizePerUnit; i++)
             for (int j = 0; j < MapSetting.MapLocalSizePerUnit; j++)
             {
-                block._mapElements[i + j * MapSetting.MapLocalSizePerUnit] = new Void();
+                block._mapElements[i, j] = new Void();
             }
 
             return block;

@@ -1,6 +1,7 @@
 #nullable enable
 
 using SandBox.Elements;
+using Tools.DataStruct;
 using UnityEngine;
 
 namespace SandBox.Map
@@ -10,7 +11,7 @@ namespace SandBox.Map
         public MapBlock(in Vector2Int globalIndex)
         {
             BlockIndex = MapOffset.GlobalToBlock(globalIndex);
-            _mapElements = new T[MapSetting.MapLocalSizePerUnit * MapSetting.MapLocalSizePerUnit];
+            _mapElements = new ZArray<T>(MapSetting.MapLocalSizePerUnit);
         }
 
         public ref T this[in Vector2Int globalIndex]
@@ -18,7 +19,7 @@ namespace SandBox.Map
             get
             {
                 Vector2Int localIndex = MapOffset.GlobalToLocal(globalIndex);
-                return ref _mapElements[localIndex.x + localIndex.y * MapSetting.MapLocalSizePerUnit];
+                return ref _mapElements[localIndex.x, localIndex.y];
             }
         }
 
@@ -102,7 +103,7 @@ namespace SandBox.Map
 
         #region Data
 
-        public readonly T[]        _mapElements;
+        public readonly ZArray<T>  _mapElements;
         public readonly Vector2Int BlockIndex;
 
         #endregion

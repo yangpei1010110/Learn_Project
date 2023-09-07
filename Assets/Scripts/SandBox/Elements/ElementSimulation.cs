@@ -50,12 +50,7 @@ namespace SandBox.Elements
             Vector2Int nextGlobalIndex = MapOffset.GlobalRound(nextWorldPosition);
             Vector2 offset = nextWorldPosition - nextGlobalIndex;
             element.PositionOffset = offset;
-
-            if (element.Type == ElementType.Gas && Time.frameCount % 100 == 0)
-            {
-                Debug.Log($"Gas:Velocity:{element.Velocity}, Offset:{element.PositionOffset}, GlobalIndex:{globalIndex}, NextGlobalIndex:{nextGlobalIndex}");
-            }
-
+            
             Vector2Int? elementGlobalIndex = globalIndex;
             if (globalIndex != nextGlobalIndex)
             {

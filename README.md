@@ -11,3 +11,6 @@ https://github.com/yangpei1010110/Learn_Project/assets/28611200/dd642e17-b42a-4c
 3.纯着色器渲染贝塞尔曲线
 ![着色器贝塞尔曲线](https://github.com/yangpei1010110/Learn_Project/assets/28611200/d3f7c8e5-159a-4d88-bc23-90af93c272e6)
 
+4.快速次表面散射
+
+https://github.com/yangpei1010110/Learn_Project/assets/28611200/e29ad635-1767-447d-b6b9-3e46fc482748

@@ -14,3 +14,7 @@ https://github.com/yangpei1010110/Learn_Project/assets/28611200/dd642e17-b42a-4c
 4.快速次表面散射
 
 https://github.com/yangpei1010110/Learn_Project/assets/28611200/e29ad635-1767-447d-b6b9-3e46fc482748
+
+5.衍射光栅
+
+https://github.com/yangpei1010110/Learn_Project/assets/28611200/06feab70-62b1-4096-8b91-0eba0fe2f899

@@ -51,7 +51,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Ambient: 0.1
+    - _Ambient: 1
     - _Attenuation: 0.05
     - _Distortion: 0
     - _Power: 2
